@@ -1,0 +1,28 @@
+{
+  "name": "traker-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Yandex Tracker API v3 (issues, queues, boards, projects, goals, bulk ops)",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "traker-mcp": "dist/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "smoke": "node scripts/smoke-test.mjs",
+    "links": "node scripts/generate-install-links.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.1.0",
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.7.0"
+  }
+}
