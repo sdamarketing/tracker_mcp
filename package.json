@@ -15,6 +15,7 @@
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "smoke": "node scripts/smoke-test.mjs",
+    "setup": "node scripts/setup.mjs",
     "links": "node scripts/generate-install-links.mjs"
   },
   "dependencies": {

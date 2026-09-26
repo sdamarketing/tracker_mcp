@@ -27,7 +27,26 @@ Claude Code, opencode, Windsurf, Zed, JetBrains AI Assistant**.
 | **Проекты, цели, портфели** | поиск, создание, редактирование, комментарии |
 | **Справочники** | статусы, типы, приоритеты, резолюции, поля, пользователи |
 
-## Установка за 5 минут
+## Установка в одну команду (macOS / Linux / WSL)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sdamarketing/tracker_mcp/main/install.sh | bash
+```
+
+Скрипт сам: проверит систему → поставит Node.js через nvm, если его нет
+(спросит согласия, sudo не нужен) → скачает сервер в `~/.traker-mcp` → соберёт
+и проверит его → запустит **мастер настройки**: ключи Трекера (ввод скрыт),
+проверка ключей в API, выбор AI-клиента (VS Code, Cursor, Claude Desktop,
+Claude Code, opencode, Windsurf, Zed, JetBrains) и итоговый отчёт.
+
+**Повторный запуск той же командой = обновление сервера** (конфиги клиентов не трогаются).
+
+> 🔎 Хотите сначала прочитать скрипт? Уберите `| bash` и посмотрите вывод:
+> `curl -fsSL https://raw.githubusercontent.com/sdamarketing/tracker_mcp/main/install.sh`
+>
+> 🪟 **Windows:** установите через WSL командой выше или вручную — см. ниже.
+
+## Ручная установка (Windows или без curl)
 
 **Шаг 1.** Убедитесь, что есть Node.js 20+ (проверка: `node -v`).
 
@@ -46,40 +65,32 @@ npm run smoke   # проверка: должно быть "OK: ... 67 tools list
 - **токен** — как получить: [docs/SETUP.md, раздел 3](docs/SETUP.md#3-токен-яндекс-трекера)
 - **ID организации** — как найти: [docs/SETUP.md, раздел 4](docs/SETUP.md#4-id-организации)
 
-**Шаг 4.** Сгенерируйте кнопки установки:
+**Шаг 4.** Запустите мастер установки:
 
 ```bash
-npm run links
+npm run setup
 ```
 
-Скрипт спросит токен и ID организации (или возьмёт их из `.env` / переменных
-окружения), затем **откроет в браузере страницу с кнопками**:
+Мастер спросит ключи (токен — скрытым вводом), проверит их в API Трекера,
+покажет меню клиентов и настроит выбранные (можно несколько подряд) —
+через их CLI или дописав конфиг с бэкапом, — а в конце выведет отчёт.
 
-| Кнопка | Что делает |
-|---|---|
-| **Установить в VS Code** | откроет VS Code и добавит сервер в профиль |
-| **Установить в Cursor** | откроет Cursor и добавит сервер в конфиг |
-| **Установить в Claude Desktop** | откроет Claude Desktop и предложит добавить сервер |
-
-На той же странице — готовые блоки конфигурации для ручной настройки всех
-остальных клиентов (Claude Code, opencode, Windsurf, Zed, JetBrains) с уже
-подставленным токеном: скопировал → вставил → работает.
-
-> ⚠️ Ссылки и страница содержат ваш токен. Скрипт сам добавляет
-> `install-links.html` в `.gitignore` — не коммитьте его и не пересылайте ссылки.
+Альтернатива: `npm run links` — откроет страницу в браузере с кнопками
+установки в один клик (VS Code, Cursor, Claude Desktop) и конфигами всех
+клиентов для ручного копирования.
 
 ## Подключение к вашему агенту
 
 | Ваш агент | Быстрый способ | Конфиг-файл |
 |---|---|---|
-| **VS Code** (Copilot) | кнопка из `npm run links` | `.vscode/mcp.json` |
-| **Cursor** | кнопка из `npm run links` | `~/.cursor/mcp.json` |
-| **Claude Desktop** | кнопка (новые версии) или вручную | `claude_desktop_config.json` |
-| **Claude Code** (терминал) | команда `claude mcp add` | `~/.claude.json` |
-| **opencode** | блок из `npm run links` | `opencode.json` |
-| **Windsurf** | блок из `npm run links` | `~/.codeium/windsurf/mcp_config.json` |
-| **Zed** | блок из `npm run links` | `settings.json` (`context_servers`) |
-| **JetBrains IDE** | блок из `npm run links` | `.mcp.json` в корне проекта |
+| **VS Code** (Copilot) | `npm run setup` (CLI `code`) | `.vscode/mcp.json` |
+| **Cursor** | `npm run setup` | `~/.cursor/mcp.json` |
+| **Claude Desktop** | `npm run setup` | `claude_desktop_config.json` |
+| **Claude Code** (терминал) | `npm run setup` (CLI `claude`) | `~/.claude.json` |
+| **opencode** | `npm run setup` | `~/.config/opencode/opencode.json` |
+| **Windsurf** | `npm run setup` | `~/.codeium/windsurf/mcp_config.json` |
+| **Zed** | `npm run setup` | `settings.json` (`context_servers`) |
+| **JetBrains IDE** | `npm run setup` | `.mcp.json` в корне проекта |
 
 Пошаговые инструкции с точными путями для macOS/Windows/Linux:
 **[docs/SETUP.md](docs/SETUP.md#6-подключение-к-вашему-агенту)**.
@@ -126,7 +137,8 @@ npm run links
 npm run typecheck   # проверка типов
 npm run build       # сборка в dist/
 npm run smoke       # запуск и список инструментов без обращения к API
-npm run links       # генерация страницы с кнопками установки
+npm run setup       # интерактивный мастер установки для AI-клиентов
+npm run links       # страница с кнопками установки (deeplinks)
 ```
 
 Архитектура и полный список инструментов — в [docs/SETUP.md](docs/SETUP.md) и в коде `src/tools/`.
