@@ -94,18 +94,17 @@ export function registerQueueTools(server: McpServer, client: TrackerClient): vo
     {
       description: 'Create a version in a queue.',
       inputSchema: z.object({
-        queueId: z.string().describe('Queue key or id'),
+        queueId: z.string().describe('Queue key'),
         name: z.string().describe('Version name'),
         description: z.string().optional().describe('Version description'),
         startDate: z.string().optional().describe('Start date, format YYYY-MM-DD'),
-        releaseDate: z.string().optional().describe('Release date, format YYYY-MM-DD'),
-        status: z.string().optional().describe('Version status: "open" or "released"'),
+        dueDate: z.string().optional().describe('Due date, format YYYY-MM-DD'),
       }),
     },
     async (args) =>
       runTool(async () => {
         const { queueId, ...body } = args;
-        return client.post(`/queues/${encodeURIComponent(queueId)}/versions`, body);
+        return client.post('/versions', { queue: queueId, ...body });
       }),
   );
 

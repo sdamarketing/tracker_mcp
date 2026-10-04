@@ -11,10 +11,9 @@ const entityFieldsSchema = z
   .record(z.string(), z.unknown())
   .optional()
   .describe(
-    'Additional entity fields: summary, description, lead, teamUsers, clients, followers, ' +
-    'start, end, tags, parentEntity, entityStatus, keyResultItems (goal), checklistItems, ' +
-    'metricItems, teamAccess. Supports add/set/replace update commands for PATCH. ' +
-    'Example: {"entityStatus": "in_progress", "lead": "user1"}',
+    'Additional entity fields: description, lead, teamUsers, clients, followers, start, ' +
+    'end, tags, entityStatus, teamAccess, parentEntity ({"primary": "id", "secondary": []}). ' +
+    'Example: {"entityStatus": "in_progress", "lead": "user1", "end": "2026-12-31"}',
   );
 
 function entityPath(entityType: string, entityId?: string): string {
@@ -86,12 +85,30 @@ export function registerEntityTools(server: McpServer, client: TrackerClient): v
         entityType: entityTypeSchema,
         summary: z.string().describe('Entity name'),
         fields: entityFieldsSchema,
+        links: z
+          .array(
+            z.object({
+              relationship: z
+                .string()
+                .describe(
+                  'Link type, e.g. "works towards" (project→goal), "depends on", ' +
+                  '"is dependent by", "parent entity", "child entity", "is supported by"',
+                ),
+              entity: z.string().describe('Linked entity id'),
+            }),
+          )
+          .optional()
+          .describe('Entity links'),
       }),
     },
     async (args) =>
       runTool(async () => {
-        const { entityType, summary, fields } = args;
-        return client.post(entityPath(entityType), { summary, ...(fields ?? {}) });
+        const { entityType, summary, fields, links } = args;
+        const body: Record<string, unknown> = {
+          fields: { summary, ...(fields ?? {}) },
+        };
+        if (links) body.links = links;
+        return client.post(entityPath(entityType), body);
       }),
   );
 
@@ -105,15 +122,16 @@ export function registerEntityTools(server: McpServer, client: TrackerClient): v
         fields: z
           .record(z.string(), z.unknown())
           .describe(
-            'Fields to update, e.g. {"summary": "New name", "entityStatus": "at_risk"} ' +
-            'or with set/add commands like {"teamUsers": {"add": ["user2"]}}',
+            'Fields to update, e.g. {"summary": "New name", "entityStatus": "at_risk", ' +
+            '"parentEntity": {"primary": "portfolio-id", "secondary": []}} or with ' +
+            'set/add commands like {"teamUsers": {"add": ["user2"]}}',
           ),
       }),
     },
     async (args) =>
       runTool(async () => {
         const { entityType, entityId, fields } = args;
-        return client.patch(entityPath(entityType, entityId), fields);
+        return client.patch(entityPath(entityType, entityId), { fields });
       }),
   );
 

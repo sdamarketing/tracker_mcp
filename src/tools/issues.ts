@@ -4,26 +4,32 @@ import type { TrackerClient } from '../client.js';
 import { runTool, setIfDefined } from '../utils.js';
 
 const issueFieldShape = {
-  summary: z.string().describe('Issue title/summary'),
-  description: z.string().describe('Issue description (YFM markup supported)'),
-  type: z.string().describe('Issue type key, id or name, e.g. "bug", "task"'),
-  priority: z.string().describe('Priority key, id or name, e.g. "blocker", "normal"'),
-  assignee: z.string().describe('Assignee login or user id'),
-  author: z.string().describe('Author login or user id'),
-  parent: z.string().describe('Parent issue key or id'),
-  tags: z.array(z.string()).describe('Issue tags'),
-  followers: z.array(z.string()).describe('Followers: logins or user ids'),
-  components: z.array(z.string()).describe('Queue component names or ids'),
-  sprint: z.array(z.string()).describe('Sprint ids'),
-  affectedVersions: z.array(z.string()).describe('Affected version names or ids'),
-  fixVersions: z.array(z.string()).describe('Fix version names or ids'),
-  deadline: z.string().describe('Deadline date, format YYYY-MM-DD'),
-  startDate: z.string().describe('Start date, format YYYY-MM-DD'),
-  dueDate: z.string().describe('Due date, format YYYY-MM-DD'),
-  estimation: z.string().describe('Estimate in ISO 8601 duration format, e.g. "P5DT1H" or "P2W"'),
-  project: z.number().describe('Primary project shortId'),
-  unique: z.string().describe('Value that must be unique across the organization (dedup guard)'),
-  attachmentIds: z.array(z.number()).describe('Temporary attachment ids to attach'),
+  summary: z.string().optional().describe('Issue title/summary'),
+  description: z.string().optional().describe('Issue description (YFM markup supported)'),
+  type: z.string().optional().describe('Issue type key, id or name, e.g. "bug", "task"'),
+  priority: z.string().optional().describe('Priority key, id or name, e.g. "blocker", "normal"'),
+  assignee: z.string().optional().describe('Assignee login or user id'),
+  author: z.string().optional().describe('Author login or user id'),
+  parent: z.string().optional().describe('Parent issue key or id'),
+  tags: z.array(z.string()).optional().describe('Issue tags'),
+  followers: z.array(z.string()).optional().describe('Followers: logins or user ids'),
+  components: z.array(z.string()).optional().describe('Queue component names or ids'),
+  sprint: z.array(z.string()).optional().describe('Sprint ids'),
+  affectedVersions: z.array(z.string()).optional().describe('Affected version names or ids'),
+  fixVersions: z.array(z.string()).optional().describe('Fix version names or ids'),
+  deadline: z.string().optional().describe('Deadline date, format YYYY-MM-DD'),
+  startDate: z.string().optional().describe('Start date, format YYYY-MM-DD'),
+  dueDate: z.string().optional().describe('Due date, format YYYY-MM-DD'),
+  estimation: z
+    .string()
+    .optional()
+    .describe('Estimate in ISO 8601 duration format, e.g. "P5DT1H" or "P2W"'),
+  project: z.number().optional().describe('Primary project shortId'),
+  unique: z
+    .string()
+    .optional()
+    .describe('Value that must be unique across the organization (dedup guard)'),
+  attachmentIds: z.array(z.number()).optional().describe('Temporary attachment ids to attach'),
 };
 
 const issueFieldSchema = {
