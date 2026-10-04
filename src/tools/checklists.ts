@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 import type { TrackerClient } from '../client.js';
-import { runTool } from '../utils.js';
+import { dangerTool, runTool } from '../utils.js';
 
 interface ChecklistItemResponse {
   id: string;
@@ -120,11 +120,12 @@ export function registerChecklistTools(server: McpServer, client: TrackerClient)
     {
       description: 'Delete the whole checklist of an issue.',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         issueId: z.string().describe('Issue key or id'),
       }),
     },
     async (args) =>
-      runTool(async () =>
+      dangerTool(args, async () =>
         client.delete(`/issues/${encodeURIComponent(args.issueId)}/checklistItems`),
       ),
   );
@@ -134,12 +135,13 @@ export function registerChecklistTools(server: McpServer, client: TrackerClient)
     {
       description: 'Delete a checklist item from an issue.',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         issueId: z.string().describe('Issue key or id'),
         itemId: z.string().describe('Checklist item id (from get_checklist)'),
       }),
     },
     async (args) =>
-      runTool(async () =>
+      dangerTool(args, async () =>
         client.delete(
           `/issues/${encodeURIComponent(args.issueId)}/checklistItems/${encodeURIComponent(args.itemId)}`,
         ),

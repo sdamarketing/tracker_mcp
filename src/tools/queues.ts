@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 import type { TrackerClient } from '../client.js';
-import { runTool } from '../utils.js';
+import { dangerTool, runTool } from '../utils.js';
 
 export function registerQueueTools(server: McpServer, client: TrackerClient): void {
   server.registerTool(
@@ -270,10 +270,10 @@ export function registerQueueTools(server: McpServer, client: TrackerClient): vo
     {
       description:
         'Delete a queue (only when empty of issues). Only queue owner or Tracker admin can.',
-      inputSchema: z.object({ queueId: z.string().or(z.number()) }),
+      inputSchema: z.object({ confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'), queueId: z.string().or(z.number()) }),
     },
     async (args) =>
-      runTool(async () => client.delete(`/queues/${encodeURIComponent(String(args.queueId))}`)),
+      dangerTool(args, async () => client.delete(`/queues/${encodeURIComponent(String(args.queueId))}`)),
   );
 
   server.registerTool(
@@ -293,12 +293,13 @@ export function registerQueueTools(server: McpServer, client: TrackerClient): vo
     {
       description: 'Remove a tag from a queue (must not be used in any issue; admin only).',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         queueId: z.string().or(z.number()),
         tag: z.string().describe('Tag name'),
       }),
     },
     async (args) =>
-      runTool(async () => {
+      dangerTool(args, async () => {
         const { queueId, tag } = args;
         return client.post(
           `/queues/${encodeURIComponent(String(queueId))}/tags/_remove`,
@@ -495,9 +496,9 @@ export function registerQueueTools(server: McpServer, client: TrackerClient): vo
     'delete_component',
     {
       description: 'Delete a component by id.',
-      inputSchema: z.object({ componentId: z.number() }),
+      inputSchema: z.object({ confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'), componentId: z.number() }),
     },
-    async (args) => runTool(async () => client.delete(`/components/${args.componentId}`)),
+    async (args) => dangerTool(args, async () => client.delete(`/components/${args.componentId}`)),
   );
 
   server.registerTool(
@@ -572,9 +573,9 @@ export function registerQueueTools(server: McpServer, client: TrackerClient): vo
     'delete_queue_version',
     {
       description: 'Delete a queue version by id.',
-      inputSchema: z.object({ versionId: z.number() }),
+      inputSchema: z.object({ confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'), versionId: z.number() }),
     },
-    async (args) => runTool(async () => client.delete(`/versions/${args.versionId}`)),
+    async (args) => dangerTool(args, async () => client.delete(`/versions/${args.versionId}`)),
   );
 
   // --- Триггеры ------------------------------------------------------------------------------
@@ -741,12 +742,13 @@ export function registerQueueTools(server: McpServer, client: TrackerClient): vo
     {
       description: 'Delete a queue macro.',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         queueId: z.string().or(z.number()),
         macroId: z.string().or(z.number()),
       }),
     },
     async (args) =>
-      runTool(async () => {
+      dangerTool(args, async () => {
         const { queueId, macroId } = args;
         return client.delete(
           `/queues/${encodeURIComponent(String(queueId))}/macros/${encodeURIComponent(String(macroId))}`,

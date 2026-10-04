@@ -43,6 +43,26 @@ export async function runTool(fn: () => Promise<unknown>): Promise<CallToolResul
   }
 }
 
+/**
+ * Guard for destructive/bulk tools: refuses to run unless the caller passes
+ * confirm: true. The agent must show the user what will be changed/deleted and
+ * get explicit approval before retrying with confirm=true.
+ */
+export async function dangerTool(
+  args: { confirm?: boolean },
+  fn: () => Promise<unknown>,
+): Promise<CallToolResult> {
+  return runTool(async () => {
+    if (args.confirm !== true) {
+      throw new Error(
+        'Refused: this is a destructive or bulk operation. Show the user exactly what ' +
+          'will be changed or deleted, get explicit approval, then call again with confirm=true.',
+      );
+    }
+    return fn();
+  });
+}
+
 /** Merge defined optional fields into an object, skipping undefined values. */
 export function setIfDefined(
   target: Record<string, unknown>,

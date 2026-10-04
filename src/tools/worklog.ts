@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 import type { TrackerClient } from '../client.js';
-import { runTool } from '../utils.js';
+import { dangerTool, runTool } from '../utils.js';
 
 export function registerWorklogTools(server: McpServer, client: TrackerClient): void {
   server.registerTool(
@@ -88,10 +88,11 @@ export function registerWorklogTools(server: McpServer, client: TrackerClient): 
     {
       description: 'Delete a time tracking record (worklog).',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         worklogId: z.string().describe('Worklog record id (from get_issue_worklog)'),
       }),
     },
     async (args) =>
-      runTool(async () => client.delete(`/worklog/${encodeURIComponent(args.worklogId)}`)),
+      dangerTool(args, async () => client.delete(`/worklog/${encodeURIComponent(args.worklogId)}`)),
   );
 }

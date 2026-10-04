@@ -3,7 +3,7 @@ import { basename } from 'node:path';
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 import type { TrackerClient } from '../client.js';
-import { runTool, imageResult, textResult, jsonResult } from '../utils.js';
+import { dangerTool, runTool, imageResult, textResult, jsonResult } from '../utils.js';
 
 const MIME_TYPES: Record<string, string> = {
   '.png': 'image/png',
@@ -207,12 +207,13 @@ export function registerAttachmentTools(server: McpServer, client: TrackerClient
     {
       description: 'Delete an attached file from an issue.',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         issueId: z.string().describe('Issue key or id'),
         attachmentId: z.string().describe('Attachment id (from list_issue_attachments)'),
       }),
     },
     async (args) =>
-      runTool(async () =>
+      dangerTool(args, async () =>
         client.delete(
           `/issues/${encodeURIComponent(args.issueId)}/attachments/${encodeURIComponent(args.attachmentId)}`,
         ),

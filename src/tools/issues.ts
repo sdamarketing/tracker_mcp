@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 import type { TrackerClient } from '../client.js';
-import { runTool, setIfDefined } from '../utils.js';
+import { dangerTool, runTool, setIfDefined } from '../utils.js';
 
 const issueFieldShape = {
   summary: z.string().optional().describe('Issue title/summary'),
@@ -392,12 +392,13 @@ export function registerIssueTools(server: McpServer, client: TrackerClient): vo
     {
       description: 'Delete a link between issues by link id (see get_issue_links).',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         issueId: z.string().describe('Current issue key or id'),
         linkId: z.string().describe('Link id from get_issue_links'),
       }),
     },
     async (args) =>
-      runTool(async () =>
+      dangerTool(args, async () =>
         client.delete(`/issues/${encodeURIComponent(args.issueId)}/links/${encodeURIComponent(args.linkId)}`),
       ),
   );

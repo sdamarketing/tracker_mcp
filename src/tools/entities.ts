@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 import type { TrackerClient } from '../client.js';
-import { runTool } from '../utils.js';
+import { dangerTool, runTool } from '../utils.js';
 
 const entityTypeSchema = z
   .enum(['project', 'portfolio', 'goal'])
@@ -140,12 +140,13 @@ export function registerEntityTools(server: McpServer, client: TrackerClient): v
     {
       description: 'Delete a project, portfolio or goal by id.',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         entityType: entityTypeSchema,
         entityId: z.string().describe('Entity id'),
       }),
     },
     async (args) =>
-      runTool(async () =>
+      dangerTool(args, async () =>
         client.delete(entityPath(args.entityType, args.entityId)),
       ),
   );
@@ -238,6 +239,7 @@ export function registerEntityTools(server: McpServer, client: TrackerClient): v
     {
       description: 'Delete a comment of a project, portfolio or goal.',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         entityType: entityTypeSchema,
         entityId: z.string(),
         commentId: z.string(),
@@ -246,7 +248,7 @@ export function registerEntityTools(server: McpServer, client: TrackerClient): v
       }),
     },
     async (args) =>
-      runTool(async () => {
+      dangerTool(args, async () => {
         const { entityType, entityId, commentId, notify, notifyAuthor } = args;
         return client.delete(
           `${entityPath(entityType, entityId)}/comments/${encodeURIComponent(commentId)}`,
@@ -381,13 +383,14 @@ export function registerEntityTools(server: McpServer, client: TrackerClient): v
     {
       description: 'Delete all checklist items of a project/portfolio.',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         entityType: checklistEntityType,
         entityId: z.string(),
         notify: z.boolean().optional(),
       }),
     },
     async (args) =>
-      runTool(async () => {
+      dangerTool(args, async () => {
         const { entityType, entityId, notify } = args;
         return client.delete(`${entityPath(entityType, entityId)}/checklistItems`, {
           ...(notify !== undefined ? { notify } : {}),
@@ -400,6 +403,7 @@ export function registerEntityTools(server: McpServer, client: TrackerClient): v
     {
       description: 'Delete one checklist item of a project/portfolio.',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         entityType: checklistEntityType,
         entityId: z.string(),
         itemId: z.string(),
@@ -407,7 +411,7 @@ export function registerEntityTools(server: McpServer, client: TrackerClient): v
       }),
     },
     async (args) =>
-      runTool(async () => {
+      dangerTool(args, async () => {
         const { entityType, entityId, itemId, notify } = args;
         return client.delete(
           `${entityPath(entityType, entityId)}/checklistItems/${encodeURIComponent(itemId)}`,
@@ -476,13 +480,14 @@ export function registerEntityTools(server: McpServer, client: TrackerClient): v
     {
       description: 'Delete a file from a project, portfolio or goal.',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         entityType: entityTypeSchema,
         entityId: z.string(),
         attachmentId: z.string().or(z.number()),
       }),
     },
     async (args) =>
-      runTool(async () =>
+      dangerTool(args, async () =>
         client.delete(
           `${entityPath(args.entityType, args.entityId)}/attachments/${encodeURIComponent(String(args.attachmentId))}`,
         ),
@@ -540,13 +545,14 @@ export function registerEntityTools(server: McpServer, client: TrackerClient): v
     {
       description: 'Unlink an entity from another entity (by the linked entity id).',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         entityType: entityTypeSchema,
         entityId: z.string(),
         right: z.string().describe('Id of the entity to unlink'),
       }),
     },
     async (args) =>
-      runTool(async () => {
+      dangerTool(args, async () => {
         const { entityType, entityId, right } = args;
         return client.delete(`${entityPath(entityType, entityId)}/links`, { right });
       }),
@@ -585,6 +591,7 @@ export function registerEntityTools(server: McpServer, client: TrackerClient): v
     {
       description: 'Bulk update projects, portfolios or goals: fields, comment and links at once.',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         entityType: entityTypeSchema,
         metaEntities: z.array(z.string()).min(1).describe('Entity ids to update'),
         fields: z.record(z.string(), z.unknown()).optional(),
@@ -596,7 +603,7 @@ export function registerEntityTools(server: McpServer, client: TrackerClient): v
       }),
     },
     async (args) =>
-      runTool(async () => {
+      dangerTool(args, async () => {
         const { entityType, ...body } = args;
         return client.post(`/entities/${encodeURIComponent(entityType)}/bulkchange/_update`, body);
       }),

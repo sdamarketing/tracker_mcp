@@ -1,5 +1,7 @@
 # traker-mcp — MCP-сервер для Яндекс Трекера
 
+[![CI](https://github.com/sdamarketing/tracker_mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/sdamarketing/tracker_mcp/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/tracker-mcp?style=flat-square)](https://www.npmjs.com/package/tracker-mcp)
 [![skills.sh](https://skills.sh/b/sdamarketing/tracker_mcp?style=flat-square)](https://skills.sh/sdamarketing/tracker_mcp)
 [![install](https://img.shields.io/badge/curl%20%7C%20bash-установка-22c55e?style=flat-square)](https://raw.githubusercontent.com/sdamarketing/tracker_mcp/main/install.sh)
 
@@ -69,6 +71,16 @@ Claude Code, opencode, Windsurf, Zed, JetBrains) и итоговый отчёт.
 > `curl -fsSL https://raw.githubusercontent.com/sdamarketing/tracker_mcp/main/install.sh`
 >
 > 🪟 **Windows:** установите через WSL командой выше или вручную — см. ниже.
+
+## Установка из npm (без клонирования)
+
+```bash
+npm install -g tracker-mcp
+```
+
+Дальше в конфиге вашего AI-клиента укажите команду `tracker-mcp` и переменные
+`TRACKER_TOKEN` / `TRACKER_ORG_ID` (примеры блоков — в таблице ниже или
+`npm run links` из git-копии сгенерирует их с вашими ключами автоматически).
 
 ## Ручная установка (Windows или без curl)
 

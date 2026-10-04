@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 import type { TrackerClient } from '../client.js';
-import { runTool } from '../utils.js';
+import { dangerTool, runTool } from '../utils.js';
 
 const localized = z
   .union([z.string(), z.record(z.string(), z.string())])
@@ -142,10 +142,10 @@ export function registerWorkflowTools(server: McpServer, client: TrackerClient):
     'delete_workflow',
     {
       description: 'Delete a workflow by id (admin).',
-      inputSchema: z.object({ workflowId: z.string() }),
+      inputSchema: z.object({ confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'), workflowId: z.string() }),
     },
     async (args) =>
-      runTool(async () =>
+      dangerTool(args, async () =>
         client.delete(`/workflows/${encodeURIComponent(args.workflowId)}`),
       ),
   );

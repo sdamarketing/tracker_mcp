@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 import type { TrackerClient } from '../client.js';
-import { runTool } from '../utils.js';
+import { dangerTool, runTool } from '../utils.js';
 
 const filterBody = {
   name: z.string().optional().describe('Filter name'),
@@ -66,10 +66,10 @@ export function registerFilterTools(server: McpServer, client: TrackerClient): v
     'delete_filter',
     {
       description: 'Delete a saved filter (uses the v2 API path per official docs).',
-      inputSchema: z.object({ filterId: z.number() }),
+      inputSchema: z.object({ confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'), filterId: z.number() }),
     },
     async (args) =>
-      runTool(async () =>
+      dangerTool(args, async () =>
         client.delete(`/v2/filters/${encodeURIComponent(args.filterId)}`),
       ),
   );

@@ -2,6 +2,7 @@ import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 import type { TrackerClient } from '../client.js';
 import { runTool } from '../utils.js';
+import { cached, invalidatePrefix } from '../cache.js';
 
 export function registerUserTools(server: McpServer, client: TrackerClient): void {
   server.registerTool(
@@ -66,7 +67,7 @@ export function registerAdminTools(server: McpServer, client: TrackerClient): vo
       description: 'List all issue types (task, bug, epic, ...) available in the organization.',
       inputSchema: z.object({}),
     },
-    async () => runTool(async () => client.get('/issuetypes')),
+    async () => runTool(async () => cached('catalog:issuetypes', () => client.get('/issuetypes'))),
   );
 
   server.registerTool(
@@ -75,7 +76,7 @@ export function registerAdminTools(server: McpServer, client: TrackerClient): vo
       description: 'List all issue statuses.',
       inputSchema: z.object({}),
     },
-    async () => runTool(async () => client.get('/statuses')),
+    async () => runTool(async () => cached('catalog:statuses', () => client.get('/statuses'))),
   );
 
   server.registerTool(
@@ -84,7 +85,7 @@ export function registerAdminTools(server: McpServer, client: TrackerClient): vo
       description: 'List all issue priorities.',
       inputSchema: z.object({}),
     },
-    async () => runTool(async () => client.get('/priorities')),
+    async () => runTool(async () => cached('catalog:priorities', () => client.get('/priorities'))),
   );
 
   server.registerTool(
@@ -93,7 +94,7 @@ export function registerAdminTools(server: McpServer, client: TrackerClient): vo
       description: 'List all issue resolutions.',
       inputSchema: z.object({}),
     },
-    async () => runTool(async () => client.get('/resolutions')),
+    async () => runTool(async () => cached('catalog:resolutions', () => client.get('/resolutions'))),
   );
 
   server.registerTool(
@@ -104,7 +105,7 @@ export function registerAdminTools(server: McpServer, client: TrackerClient): vo
         'useful to discover field ids for filters, create and edit operations.',
       inputSchema: z.object({}),
     },
-    async () => runTool(async () => client.get('/fields')),
+    async () => runTool(async () => cached('catalog:fields', () => client.get('/fields'))),
   );
 
   const localized = z.record(z.string(), z.string()).describe('{"ru": "…", "en": "…"}');
@@ -118,7 +119,7 @@ export function registerAdminTools(server: McpServer, client: TrackerClient): vo
         name: localized,
       }),
     },
-    async (args) => runTool(async () => client.post('/issuetypes', args)),
+    async (args) => runTool(async () => { const r = await client.post('/issuetypes', args); invalidatePrefix('catalog:'); return r; }),
   );
 
   server.registerTool(
@@ -134,6 +135,7 @@ export function registerAdminTools(server: McpServer, client: TrackerClient): vo
     async (args) =>
       runTool(async () => {
         const { typeKey, version, ...body } = args;
+        invalidatePrefix('catalog:');
         return client.patch(
           `/issuetypes/${encodeURIComponent(typeKey)}`,
           body,
@@ -154,7 +156,7 @@ export function registerAdminTools(server: McpServer, client: TrackerClient): vo
           .describe('Status category'),
       }),
     },
-    async (args) => runTool(async () => client.post('/statuses', args)),
+    async (args) => runTool(async () => { const r = await client.post('/statuses', args); invalidatePrefix('catalog:'); return r; }),
   );
 
   server.registerTool(
@@ -173,6 +175,7 @@ export function registerAdminTools(server: McpServer, client: TrackerClient): vo
     async (args) =>
       runTool(async () => {
         const { statusKey, version, ...body } = args;
+        invalidatePrefix('catalog:');
         return client.patch(
           `/statuses/${encodeURIComponent(statusKey)}`,
           body,
@@ -190,7 +193,7 @@ export function registerAdminTools(server: McpServer, client: TrackerClient): vo
         name: localized,
       }),
     },
-    async (args) => runTool(async () => client.post('/resolutions', args)),
+    async (args) => runTool(async () => { const r = await client.post('/resolutions', args); invalidatePrefix('catalog:'); return r; }),
   );
 
   server.registerTool(
@@ -208,6 +211,7 @@ export function registerAdminTools(server: McpServer, client: TrackerClient): vo
     async (args) =>
       runTool(async () => {
         const { resolutionKey, version, ...body } = args;
+        invalidatePrefix('catalog:');
         return client.patch(
           `/resolutions/${encodeURIComponent(resolutionKey)}`,
           body,
@@ -227,7 +231,7 @@ export function registerAdminTools(server: McpServer, client: TrackerClient): vo
         description: z.string(),
       }),
     },
-    async (args) => runTool(async () => client.post('/priorities', args)),
+    async (args) => runTool(async () => { const r = await client.post('/priorities', args); invalidatePrefix('catalog:'); return r; }),
   );
 
   server.registerTool(
@@ -244,6 +248,7 @@ export function registerAdminTools(server: McpServer, client: TrackerClient): vo
     async (args) =>
       runTool(async () => {
         const { priorityKey, version, ...body } = args;
+        invalidatePrefix('catalog:');
         return client.patch(
           `/priorities/${encodeURIComponent(priorityKey)}`,
           body,

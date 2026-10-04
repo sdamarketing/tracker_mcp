@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 import type { TrackerClient } from '../client.js';
-import { runTool } from '../utils.js';
+import { dangerTool, runTool } from '../utils.js';
 
 export function registerExternalLinkTools(server: McpServer, client: TrackerClient): void {
   server.registerTool(
@@ -56,12 +56,13 @@ export function registerExternalLinkTools(server: McpServer, client: TrackerClie
     {
       description: 'Delete an external application link of an issue.',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         issueId: z.string().describe('Issue key or id'),
         linkId: z.string().describe('Link id from get_external_links'),
       }),
     },
     async (args) =>
-      runTool(async () =>
+      dangerTool(args, async () =>
         client.delete(
           `/issues/${encodeURIComponent(args.issueId)}/remotelinks/${encodeURIComponent(args.linkId)}`,
         ),

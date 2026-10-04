@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 import type { TrackerClient } from '../client.js';
-import { runTool } from '../utils.js';
+import { dangerTool, runTool } from '../utils.js';
 
 const workflowTypes = z
   .enum(['vacation', 'paid_day_off', 'illness', 'absence', 'trip', 'conference_trip', 'conference', 'learning', 'maternity', 'duty'])
@@ -53,11 +53,12 @@ export function registerGapTools(server: McpServer, client: TrackerClient): void
     {
       description: 'Delete absences by ids (admin).',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         gapIds: z.array(z.string()).max(100).describe('Absence ids'),
       }),
     },
     async (args) =>
-      runTool(async () =>
+      dangerTool(args, async () =>
         client.delete('/gaps', { gapIds: args.gapIds.join(',') }),
       ),
   );

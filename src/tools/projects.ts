@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 import type { TrackerClient } from '../client.js';
-import { runTool } from '../utils.js';
+import { dangerTool, runTool } from '../utils.js';
 
 export function registerProjectTools(server: McpServer, client: TrackerClient): void {
   server.registerTool(
@@ -99,11 +99,12 @@ export function registerProjectTools(server: McpServer, client: TrackerClient): 
     {
       description: 'Delete a project by id. Issues are not deleted.',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         projectId: z.string().describe('Project id'),
       }),
     },
     async (args) =>
-      runTool(async () =>
+      dangerTool(args, async () =>
         client.delete(`/projects/${encodeURIComponent(args.projectId)}`),
       ),
   );

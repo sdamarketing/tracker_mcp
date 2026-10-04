@@ -1,10 +1,11 @@
 {
-  "name": "traker-mcp",
-  "version": "0.1.0",
-  "description": "MCP server for Yandex Tracker API v3 (issues, queues, boards, projects, goals, bulk ops)",
+  "name": "tracker-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Yandex Tracker API v3 — full coverage (185 tools): issues, queues, boards, sprints, projects, goals, bulk ops, admin catalogs",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
+    "tracker-mcp": "dist/index.js",
     "traker-mcp": "dist/index.js"
   },
   "engines": {
@@ -16,7 +17,12 @@
     "typecheck": "tsc --noEmit",
     "smoke": "node scripts/smoke-test.mjs",
     "setup": "node scripts/setup.mjs",
-    "links": "node scripts/generate-install-links.mjs"
+    "links": "node scripts/generate-install-links.mjs",
+    "test": "npm run build && node tests/e2e.mjs",
+    "docs:check": "node scripts/check-docs-drift.mjs",
+    "docs:update": "node scripts/check-docs-drift.mjs --update",
+    "update": "node scripts/self-update.mjs",
+    "prepublishOnly": "npm run build && npm run smoke && node tests/e2e.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.1.0",
@@ -25,5 +31,27 @@
   "devDependencies": {
     "@types/node": "^24.0.0",
     "typescript": "^5.7.0"
-  }
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sdamarketing/tracker_mcp.git"
+  },
+  "homepage": "https://github.com/sdamarketing/tracker_mcp",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "yandex-tracker",
+    "tracker",
+    "issues",
+    "ai-agents"
+  ],
+  "files": [
+    "dist",
+    "skills",
+    "scripts",
+    "docs",
+    "README.md",
+    "LICENSE"
+  ]
 }

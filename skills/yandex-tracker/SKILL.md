@@ -56,6 +56,12 @@ curl -fsSL https://raw.githubusercontent.com/sdamarketing/tracker_mcp/main/insta
    issue a fresh IAM token and update the client config (`.env` or the MCP
    client's environment block). OAuth tokens (`y0__…`) don't expire like that.
 
+- **Confirm destructive calls.** Every `delete_*`/`bulk_*` tool refuses to run without
+  `confirm: true`. First show the user exactly what will be changed or deleted,
+  get approval, then retry with `confirm: true`. Never guess.
+- **Catalogs are cached.** get_priorities/get_statuses/get_issue_types/get_resolutions/
+  get_issue_fields are cached ~10 min; after admin create/update the cache is dropped.
+
 ## Recipes
 
 ### Find issues
@@ -320,6 +326,37 @@ find_gaps { users: ['user1'], from: '…', to: '…' }
   attach to entity descriptions/comments.
 - Import tools (`import_*`) create records «задним числом» with custom
   authors/dates — only for migration, admin rights required.
+
+## Dialog examples (how requests map to tool calls)
+
+User: «Покажи мои открытые задачи за эту неделю»
+→ find_issues({ query: 'Assignee: me() Resolution: empty() "Updated": >= week start' })
+  or simpler: find_issues({ filter: { assignee: 'me()', resolution: 'empty()' } })
+
+User: «Закрой TASK-42 как решённую и напиши туда комментарий»
+→ 1. execute_transition({ key: 'TASK-42', transition: 'close',
+     extraFields: { resolution: 'fixed' } })
+  2. add_comment({ key: 'TASK-42', text: '…' })
+  If transition fails with 400 → get_issue_transitions to see valid ids, then retry.
+
+User: «Удали закрытые задачи в очереди OPS за прошлый год»
+→ 1. find_issues({ query: 'Queue: OPS Status: resolved() "Resolved at": < 2025-01-01' })
+     и/или count_issues — показать пользователю список и количество
+  2. Спросить подтверждение явно
+  3. Удалять по одной: …destructive ops require confirm: true (все delete_*/bulk_* —
+     сначала покажите, ЧТО будет затронуто, и только затем повторите с confirm=true)
+
+User: «Что сейчас в спринте?»
+→ get_boards → get_sprints({ boardId }) → задачи спринта — это
+  find_issues({ filter: { sprint: { id: … } } }) или board issues через фильтры.
+
+User: «Поставь реакцию 👍 на последний комментарий в TASK-7»
+→ get_comments({ key: 'TASK-7' }) → взять id последнего →
+  add_comment_reaction({ key: 'TASK-7', commentId, reaction: 'LIKE' })
+
+User: «Сколько времени я списал в марте?»
+→ search_worklog({ createdBy: 'me()', createdAt: { from: '2025-03-01T00:00:00.000+0300',
+  to: '2025-04-01T00:00:00.000+0300' } })
 
 ## References
 

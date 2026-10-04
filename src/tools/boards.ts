@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 import type { TrackerClient } from '../client.js';
-import { runTool } from '../utils.js';
+import { dangerTool, runTool } from '../utils.js';
 
 export function registerBoardTools(server: McpServer, client: TrackerClient): void {
   server.registerTool(
@@ -133,9 +133,9 @@ export function registerBoardTools(server: McpServer, client: TrackerClient): vo
     'delete_board',
     {
       description: 'Delete a board by id.',
-      inputSchema: z.object({ boardId: z.number() }),
+      inputSchema: z.object({ confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'), boardId: z.number() }),
     },
-    async (args) => runTool(async () => client.delete(`/boards/${args.boardId}`)),
+    async (args) => dangerTool(args, async () => client.delete(`/boards/${args.boardId}`)),
   );
 
   server.registerTool(
@@ -192,13 +192,14 @@ export function registerBoardTools(server: McpServer, client: TrackerClient): vo
     {
       description: 'Delete a board column (version = board version).',
       inputSchema: z.object({
+        confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
         boardId: z.number(),
         columnId: z.number(),
         version: z.string().or(z.number()).describe('Current board version'),
       }),
     },
     async (args) =>
-      runTool(async () => {
+      dangerTool(args, async () => {
         const { boardId, columnId, version } = args;
         return client.delete(`/boards/${boardId}/columns/${columnId}`, undefined, version);
       }),
@@ -312,9 +313,9 @@ export function registerBoardTools(server: McpServer, client: TrackerClient): vo
     'delete_sprint',
     {
       description: 'Delete a sprint by id.',
-      inputSchema: z.object({ sprintId: z.string().or(z.number()) }),
+      inputSchema: z.object({ confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'), sprintId: z.string().or(z.number()) }),
     },
     async (args) =>
-      runTool(async () => client.delete(`/sprints/${encodeURIComponent(String(args.sprintId))}`)),
+      dangerTool(args, async () => client.delete(`/sprints/${encodeURIComponent(String(args.sprintId))}`)),
   );
 }
