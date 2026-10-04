@@ -9,7 +9,7 @@
 
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { createInterface } from 'node:readline';
+import { createInterface, emitKeypressEvents } from 'node:readline';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,6 +26,7 @@ const green = (s) => `\x1b[32m${s}\x1b[0m`;
 const yellow = (s) => `\x1b[33m${s}\x1b[0m`;
 const red = (s) => `\x1b[31m${s}\x1b[0m`;
 const bold = (s) => `\x1b[1m${s}\x1b[0m`;
+const dim = (s) => `\x1b[2m${s}\x1b[0m`;
 
 function step(n, total, title) {
   console.log(`\n${bold(cyan(`[${n}/${total}] ${title}`))}`);
@@ -44,10 +45,61 @@ function fail(text) {
 }
 
 // --- Ввод -------------------------------------------------------------------
-// readline/promises теряет строки при piped stdin (известная гонка), поэтому
-// строки собираются в очередь и раздаются по запросу. Скрытый ввод (токен)
-// идёт в raw mode: интерфейс readline на это время закрывается, иначе его
-// слушатель поймает ввод токена и подставит его в следующий ответ.
+// Два режима:
+//  • TTY — полный захват stdin в raw mode (как inquirer): все вопросы, скрытый
+//    ввод и селектор работают через собственные обработчики, readline не
+//    используется вовсе — иначе его слушатели конкурируют за байты stdin.
+//  • Не-TTY (pipe, CI) — очередь строк поверх readline: piped-ввод приходит
+//    одним куском, readline/promises теряет строки между вопросами (известная
+//    гонка), поэтому строки собираются в очередь и раздаются по запросу.
+
+const IS_TTY = Boolean(process.stdin.isTTY && process.stdout.isTTY);
+
+/** Строка ввода в raw mode: свой эхо-вывод, backspace, Ctrl+C. hidden → '*'. */
+function rawLine({ prompt, hidden = false }) {
+  return new Promise((resolve) => {
+    const stdin = process.stdin;
+    const out = process.stdout;
+    out.write(prompt);
+    let value = '';
+    let settled = false;
+    stdin.setRawMode(true);
+    stdin.resume();
+    stdin.setEncoding('utf8');
+    // Вставленный из буфера текст приходит ОДНИМ chunk'ом — обрабатываем
+    // посимвольно, а не chunk целиком.
+    const onData = (chunk) => {
+      if (settled) {
+        stdin.removeListener('data', onData);
+        return;
+      }
+      for (const ch of chunk) {
+        if (ch === '\r' || ch === '\n') {
+          settled = true;
+          stdin.removeListener('data', onData);
+          stdin.setRawMode(false);
+          out.write('\n');
+          resolve(value);
+          return;
+        }
+        if (ch === '\u0003') {
+          out.write('\n');
+          process.exit(1);
+        } else if (ch === '\u007f' || ch === '\b') {
+          if (value.length > 0) {
+            value = value.slice(0, -1);
+            out.write('\b \b');
+          }
+        } else if (ch >= ' ' && ch !== '\u001b') {
+          value += ch;
+          out.write(hidden ? '*' : ch);
+        }
+        // прочие управляющие символы (стрелки и т.п.) игнорируем
+      }
+    };
+    stdin.on('data', onData);
+  });
+}
 
 function createPromptSession() {
   const session = {
@@ -56,6 +108,7 @@ function createPromptSession() {
     waiting: [],
     closed: false,
     spawn() {
+      if (IS_TTY) return; // в TTY readline не создаём — весь ввод через rawLine
       session.rl = createInterface({ input: process.stdin, output: process.stdout });
       session.rl.on('line', (line) => {
         const resolve = session.waiting.shift();
@@ -68,64 +121,36 @@ function createPromptSession() {
       });
     },
     question(text) {
+      if (IS_TTY) {
+        return rawLine({ prompt: text });
+      }
       process.stdout.write(text);
       if (session.queued.length > 0) {
         return Promise.resolve(session.queued.shift());
       }
-      // Ввод закончился (EOF/закрытый терминал) — дальше ждуть нечего.
+      // Ввод закончился (EOF/закрытый терминал) — дальше ждать нечего.
       if (session.closed) {
         return Promise.resolve('');
       }
       return new Promise((resolve) => session.waiting.push(resolve));
     },
+    askHidden(text) {
+      if (IS_TTY) {
+        return rawLine({ prompt: text, hidden: true });
+      }
+      return session.question(text);
+    },
     close() {
+      if (IS_TTY) return;
       session.rl?.close();
       session.rl = null;
-    },
-    async askHidden(text) {
-      if (!process.stdin.isTTY) {
-        return (await session.question(text)).trim();
-      }
-      session.close();
-      const value = await hiddenRaw(text);
-      session.spawn();
-      return value;
+      // Ввод, успевший попасть в очередь ДО закрытия (например, вставка во
+      // время другого вопроса), не должен отвечать на следующий вопрос.
+      session.queued.length = 0;
     },
   };
   session.spawn();
   return session;
-}
-
-/** Скрытый ввод посимвольно в raw mode (только TTY). */
-function hiddenRaw(text) {
-  return new Promise((resolve) => {
-    process.stdout.write(text);
-    const stdin = process.stdin;
-    let value = '';
-    stdin.setRawMode(true);
-    stdin.resume();
-    stdin.setEncoding('utf8');
-    const onData = (chunk) => {
-      if (chunk === '\r' || chunk === '\n') {
-        stdin.removeListener('data', onData);
-        stdin.setRawMode(false);
-        process.stdout.write('\n');
-        resolve(value);
-      } else if (chunk === '\u0003') {
-        process.stdout.write('\n');
-        process.exit(1);
-      } else if (chunk === '\u007f' || chunk === '\b') {
-        if (value.length > 0) {
-          value = value.slice(0, -1);
-          process.stdout.write('\b \b');
-        }
-      } else if (chunk >= ' ') {
-        value += chunk;
-        process.stdout.write('*');
-      }
-    };
-    stdin.on('data', onData);
-  });
 }
 
 async function askNumber(promptSession, text, min, max) {
@@ -152,6 +177,132 @@ async function askYesNo(promptSession, text, defaultYes = true) {
     if (yes.includes(raw)) return true;
     if (no.includes(raw)) return false;
   }
+}
+
+// --- Интерактивный выбор из списка (↑↓ / ENTER / SPACE / ESC / цифры) ---------
+
+const SELECT_HINT = '↑↓ выбирать   ENTER/SPACE подтвердить   ESC отмена';
+
+/**
+ * Радио-список в стиле opencode:
+ *   → (●) активный пункт
+ *     (○) остальные
+ * Требует TTY на входе и выходе; иначе возвращает null (вызывающий код
+ * переключается на нумерованный fallback). ESC → -1.
+ */
+function selectInteractiveRaw(promptSession, { items }) {
+  if (!IS_TTY) {
+    return Promise.resolve(null);
+  }
+  promptSession.close();
+
+  return new Promise((resolve) => {
+    const stdin = process.stdin;
+    const out = process.stdout;
+    const width = Math.max(50, out.columns ?? 80);
+    const frameLines = items.length + 1; // подсказка + пустая + пункты
+    let cursor = 0;
+    let finished = false;
+
+    const truncate = (text, max) =>
+      text.length > max ? text.slice(0, Math.max(1, max - 1)) + '…' : text;
+
+    const lineFor = (i) => {
+      const active = i === cursor;
+      const prefix = active ? ' → (●) ' : '   (○) ';
+      const label = truncate(items[i].label, width - prefix.length - 2);
+      const room = width - prefix.length - label.length - 2;
+      const description =
+        items[i].description && room > 4
+          ? '  ' + dim(truncate('— ' + items[i].description, room))
+          : '';
+      const text = active ? bold(cyan(label)) : label;
+      return prefix + text + description;
+    };
+
+    const frame = (moveUp) => {
+      let s = moveUp > 0 ? `\x1b[${moveUp}A` : '';
+      s += '\x1b[?25l'; // спрятать курсор
+      s += `  ${dim(SELECT_HINT)}\n\n`;
+      for (let i = 0; i < items.length; i++) {
+        s += lineFor(i) + '\n';
+      }
+      return s;
+    };
+
+    const cleanup = () => {
+      finished = true;
+      stdin.setRawMode(false);
+      stdin.removeListener('keypress', onKey);
+      out.write('\x1b[?25h'); // вернуть курсор
+    };
+
+    const onKey = (str, key) => {
+      if (finished) return;
+      if (key.ctrl && (key.name === 'c' || key.name === 'q')) {
+        process.stdout.write('\n');
+        process.exit(1);
+      }
+      switch (key.name) {
+        case 'up':
+        case 'k':
+          cursor = (cursor - 1 + items.length) % items.length;
+          out.write(frame(frameLines));
+          break;
+        case 'down':
+        case 'j':
+          cursor = (cursor + 1) % items.length;
+          out.write(frame(frameLines));
+          break;
+        case 'return':
+        case 'space':
+          cleanup();
+          out.write(frame(frameLines));
+          out.write('\n');
+          promptSession.spawn();
+          resolve(cursor);
+          break;
+        case 'escape':
+          cleanup();
+          // стереть блок списка
+          out.write(`\x1b[${frameLines}A`);
+          for (let i = 0; i < frameLines; i++) out.write('\x1b[2K\n');
+          promptSession.spawn();
+          resolve(-1);
+          break;
+        default:
+          if (str && /^[1-9]$/.test(str)) {
+            const n = Number(str);
+            if (n <= items.length) {
+              cursor = n - 1;
+              out.write(frame(frameLines));
+            }
+          }
+      }
+    };
+
+    stdin.setRawMode(true);
+    emitKeypressEvents(stdin);
+    stdin.on('keypress', onKey);
+    stdin.resume();
+    out.write(frame(0));
+  });
+}
+
+/**
+ * Выбор из списка с fallback: в TTY — интерактивный виджет, иначе —
+ * нумерованный список. Возвращает индекс или -1 (ESC/отмена).
+ */
+async function chooseFromList(promptSession, { title, items }) {
+  const interactive = await selectInteractiveRaw(promptSession, { items });
+  if (interactive !== null) {
+    return interactive;
+  }
+  console.log(`  ${bold(title)}`);
+  items.forEach((item, i) => {
+    console.log(`  ${i + 1}) ${item.label} ${item.description ? dim('— ' + item.description) : ''}`);
+  });
+  return (await askNumber(promptSession, `  Выбор [1-${items.length}]: `, 1, items.length)) - 1;
 }
 
 // --- Утилиты -----------------------------------------------------------------
@@ -247,34 +398,42 @@ const CLIENTS = {
   vscode: {
     title: 'VS Code (Copilot Chat)',
     hint: 'Добавит сервер в профиль VS Code через CLI `code`.',
+    menu: 'профиль VS Code через CLI `code`',
   },
   cursor: {
     title: 'Cursor',
     hint: 'Допишет сервер в ~/.cursor/mcp.json (доступен во всех проектах).',
+    menu: '~/.cursor/mcp.json',
   },
   claudeDesktop: {
     title: 'Claude Desktop',
     hint: 'Допишет сервер в claude_desktop_config.json.',
+    menu: 'claude_desktop_config.json',
   },
   claudeCode: {
     title: 'Claude Code (терминал)',
     hint: 'Выполнит `claude mcp add --scope user`.',
+    menu: 'claude mcp add --scope user',
   },
   opencode: {
     title: 'opencode',
     hint: 'Допишет сервер в ~/.config/opencode/opencode.json.',
+    menu: '~/.config/opencode/opencode.json',
   },
   windsurf: {
     title: 'Windsurf',
     hint: 'Допишет сервер в ~/.codeium/windsurf/mcp_config.json.',
+    menu: '~/.codeium/windsurf/mcp_config.json',
   },
   zed: {
     title: 'Zed',
     hint: 'Допишет сервер в settings.json (ключ context_servers).',
+    menu: 'settings.json → context_servers',
   },
   jetbrains: {
     title: 'JetBrains IDE (IntelliJ, WebStorm...)',
     hint: 'Создаст .mcp.json в выбранной папке проекта.',
+    menu: '.mcp.json в корне проекта',
   },
 };
 
@@ -337,13 +496,24 @@ async function main() {
       fail('ID организации обязателен. Прервано.');
       process.exit(1);
     }
-    const authChoice = await askNumber(
-      prompt,
-      '  Тип организации: 1) Яндекс 360 (OAuth-токен)  2) Yandex Cloud (IAM-токен)  Выбор [1-2]: ',
-      1,
-      2,
-    );
-    auth = authChoice === 2 ? 'iam' : 'oauth';
+    const authIdx = await chooseFromList(prompt, {
+      title: 'Тип организации:',
+      items: [
+        {
+          label: 'Яндекс 360 для бизнеса',
+          description: 'OAuth-токен y0__… · заголовок X-Org-ID',
+        },
+        {
+          label: 'Yandex Cloud / Identity Hub',
+          description: 'IAM-токен t1.… · заголовок X-Cloud-Org-ID · живёт ≤12 часов',
+        },
+      ],
+    });
+    if (authIdx < 0) {
+      fail('Выбор отменён. Прервано.');
+      process.exit(1);
+    }
+    auth = authIdx === 1 ? 'iam' : 'oauth';
   }
 
   // [3/5] Проверка ключей ---------------------------------------------------------
@@ -379,24 +549,34 @@ async function main() {
 
   step(4, 5, 'Для какого AI-клиента настраиваем?');
   const keys = Object.keys(CLIENTS);
-  keys.forEach((key, index) => {
-    console.log(`  ${index + 1}) ${bold(CLIENTS[key].title)}`);
-    console.log(`     ${CLIENTS[key].hint}`);
-  });
+  const clientItems = keys.map((key) => ({
+    value: key,
+    label: CLIENTS[key].title,
+    description: CLIENTS[key].menu,
+  }));
 
   // [5/5] Установка (+ цикл «ещё один клиент») ----------------------------------------
 
-  let again = true;
   const configured = [];
-  while (again) {
-    const choice = await askNumber(prompt, `  Выбор [1-${keys.length}]: `, 1, keys.length);
-    const clientKey = keys[choice - 1];
+  for (;;) {
+    const idx = await chooseFromList(prompt, {
+      title: 'Клиент:',
+      items: clientItems,
+    });
+    if (idx < 0) {
+      warn('Выбор отменён — клиенты не настроены.');
+      break;
+    }
+    const clientKey = clientItems[idx].value;
+    ok(`Выбран: ${CLIENTS[clientKey].title}`);
 
     console.log('');
     const result = await installForClient(clientKey, { token, orgId, auth }, prompt);
     configured.push(result);
 
-    again = await askYesNo(prompt, '  Настроить ещё один клиент?', false);
+    if (!(await askYesNo(prompt, '  Настроить ещё один клиент?', false))) {
+      break;
+    }
   }
 
   // Сохранение ключей -----------------------------------------------------------------
