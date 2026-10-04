@@ -16,7 +16,7 @@
 set -euo pipefail
 
 VERSION="0.1.0"
-AUTHOR="Александр Хмара (@alexandr-khm)"
+AUTHOR="Александр Хмара (@sdamarketing)"
 REPO_URL="${TRAKER_REPO_URL:-https://github.com/sdamarketing/tracker_mcp.git}"
 REPO_PUBLIC_URL="github.com/sdamarketing/tracker_mcp"
 NVM_INSTALL_URL="https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.8/install.sh"
