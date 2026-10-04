@@ -134,8 +134,47 @@ returned id.
 ```
 add_checklist_item { issueId: 'TREK-1', text: 'Repro on staging' }
 edit_checklist_item { issueId: 'TREK-1', itemId: '…', checked: true }  // full-list merge is handled by the tool
+delete_checklist { issueId: 'TREK-1' }                                // remove whole checklist
 add_worklog_record { issueId: 'TREK-1', start: '2026-10-04T12:00:00.000+0000', duration: 'PT45M' }
+find_worklog_records { createdBy: 'user1', createdFrom: '2026-10-01T00:00:00.000+0000' }  // search across issues
 add_comment { issueId: 'TREK-1', text: 'Deployed' }
+get_issue_comment { issueId: 'TREK-1', commentId: '123' }
+add_comment_reaction { issueId: 'TREK-1', commentId: '123', reaction: 'HEART' }
+```
+
+### Attachments: download and temp upload
+
+```
+list_issue_attachments { issueId: 'TREK-1' }
+download_issue_attachment { issueId: 'TREK-1', attachmentId: '456' }
+// → images come back as image content (rendered in chat), text as text,
+//   other binaries as base64 (≤8 МБ). No filename needed — resolved by id.
+get_attachment_thumbnail { issueId: 'TREK-1', attachmentId: '456' }   // preview image
+upload_temp_attachment { filePath: '/tmp/screenshot.png' }
+// → returns a temp id usable ONCE in:
+//   create_issue/add_comment attachmentIds, add_entity_attachment, import tools
+upload_issue_attachment { issueId: 'TREK-1', filePath: '/tmp/log.txt' }  // direct attach
+```
+
+### Search: suggestions and huge sets (>10 000)
+
+```
+get_search_suggest { input: 'login crash' }            // user gave imprecise name
+find_issues { query: 'Queue: BIG', scrollType: 'sorted', perScroll: 1000 }
+// → returns { _scroll: { scrollId, scrollToken, totalCount, hint }, issues }
+// continue: find_issues { …, scrollId: '<scrollId>' }
+// done early? release_search_scroll { scrollTokens: { '<scrollId>': '<scrollToken>' } }
+```
+
+### Saved filters and reports
+
+```
+create_filter { name: 'My bugs', query: 'Queue: TREK Type: bug' }   // → id
+find_issues { filterId: 42 }                                          // use it
+update_filter { filterId: 42, query: '…' }                           // conditions fully replaced
+delete_filter { filterId: 42 }                                       // documented /v2 path — tool handles it
+create_issue_report { summary: 'Weekly export', format: 'csv', query: 'Queue: TREK', fields: ['key','summary','status'] }
+find_issue_reports {}                                                 // list saved reports
 ```
 
 ### Queues, versions, components
@@ -171,8 +210,87 @@ not_achieved, exceeded, cancelled`. `search_entities` returns `id`/`shortId` —
 get_statuses {}                       // column statuses must be real keys
 create_board { name: 'Dev board', columns: [ { name: 'To Do', statuses: ['open'] },
   { name: 'In Progress', statuses: ['inProgress'] } ] }
+update_board { boardId: 4, name: 'Dev board v2', columns: [...] }     // owner not editable
+delete_board { boardId: 4 }
+get_boards_paginate { perPage: 500 }                                  // >500 boards: pass last id
+// Columns (need the board "version" from get_board — If-Match optimistic lock):
+create_board_column { boardId: 4, name: 'QA', statuses: ['testing'], version: '1' }
+update_board_column { boardId: 4, columnId: 9, statuses: ['tested'], version: '2' }
+delete_board_column { boardId: 4, columnId: 9, version: '3' }
 create_dashboard { name: 'Team dashboard', layout: 'two-columns' }
 create_cycle_time_widget { dashboardId: 7, description: 'Cycle time TREK', query: 'Queue: TREK', fromStatuses: [{ key: 'open' }], toStatuses: [{ key: 'closed' }] }
+```
+
+### Sprints (boards with sprintsAvailable)
+
+```
+create_sprint { boardId: 4, name: 'Sprint 1', startDate: '2026-10-05', endDate: '2026-10-19' }
+start_sprint { sprintId: '53', version: '1' }       // → in_progress
+archive_sprint { sprintId: '53', version: '2' }     // → archived
+update_sprint { sprintId: '53', name: 'Sprint 1.1', version: '3' }
+delete_sprint { sprintId: '53' }
+```
+Sprint tools need the sprint `version` (from get_sprint / get_board_sprints) —
+If-Match optimistic locking, 412 on conflict.
+
+### Queue configuration: rights, fields, automation
+
+```
+// Access rights (arrays overwrite, {add:[…]} / {remove:[…]} apply deltas):
+set_queue_access { queueId: 'TREK', permissions: { read: { users: { add: ['user1'] } }, write: { groups: [42] } } }
+get_queue_user_access { queueId: 'TREK', userId: 'user1' }
+// Local fields:
+create_queue_local_field { queueId: 'TREK', name: { ru: 'Слой' }, id: 'layer', category: '…', type: 'ru.yandex.startrek.core.fields.StringFieldType' }
+// Versions / components:
+update_queue_version { versionId: 3, name: 'v2.1', dueDate: '2026-12-31' }
+delete_queue_version { versionId: 3 }
+get_components {}                                                    // org-wide
+update_component { componentId: 5, version: 2, name: 'Billing v2' }  // version from get_component
+// Macros:
+create_queue_macro { queueId: 'TREK', name: 'Close as dup', body: 'Closed as duplicate', issueUpdate: { resolution: 'duplicate' } }
+// Triggers (actions/conditions are typed objects — see docs):
+create_queue_trigger { queueId: 'TREK', name: 'Auto-assign', actions: [ { type: 'Update', update: { assignee: 'user1' } } ] }
+get_queue_trigger_logs { queueId: 'TREK', triggerId: 7, limit: 50 }
+// Workflows:
+create_workflow { name: 'Custom flow', initialAction: { name: { ru: 'Открыть' }, target: 'open' }, steps: [ { status: 'open', actions: [] } ] }
+get_queue_workflows { queueId: 'TREK' }
+update_workflow_action { workflowId: 'W1', statusKey: 'open', actionId: 'close', version: 3, target: 'closed' }
+```
+
+### Entities: full lifecycle beyond CRUD
+
+```
+// Checklist on a project (same shape as issue checklists):
+add_entity_checklist_items { entityType: 'project', entityId: '…', items: [ { text: 'Migrate DB' } ] }
+// Links between entities:
+create_entity_link { entityType: 'goal', entityId: '…', links: [ { relationship: 'is supported by', entity: '<project-id>' } ] }
+get_entity_links { entityType: 'goal', entityId: '…' }
+delete_entity_link { entityType: 'goal', entityId: '…', right: '<project-id>' }
+// Event history:
+get_entity_events { entityType: 'project', entityId: '…', perPage: 50 }
+// Bulk (fields + comment + links for every entity at once):
+bulk_update_entities { entityType: 'goal', metaEntities: ['id1', 'id2'], fields: { entityStatus: 'at_risk' }, comment: 'Priority raised' }
+// Access rights:
+get_entity_permissions { entityType: 'project', entityId: '…' }
+update_entity_permissions { entityType: 'project', entityId: '…', grant: { READ: { users: ['user1'] } } }
+get_entity_access {}        // + inheritance sources
+update_entity_access {}     // permissionSources + acl; disable inheritance before acl changes
+// Key results of a goal (field via update_entity):
+update_entity { entityType: 'goal', entityId: '…', fields: { keyResultItems: [ { type: 'value', text: '1000 MAU', progress: { start: 0, end: 1000, current: 300 } } ] } }
+```
+
+### External links and migration
+
+```
+get_external_applications {}                          // installed connectors
+create_external_link { issueId: 'TREK-1', relationship: 'RELATES', key: 'JIRA-123', origin: '<app-id>' }
+// Migration (admin only, custom authors/dates «задним числом»):
+import_issue { queue: 'TREK', summary: 'Old issue', createdAt: '2025-01-15T10:00:00.000+0000', createdBy: 'user1' }
+import_issue_comment { issueId: 'TREK-1', text: 'From Jira', createdAt: '…', createdBy: 'user1' }
+import_issue_attachment { issueId: 'TREK-1', filePath: '/backup/old.png', createdAt: '…', createdBy: 'user1' }
+// Absences (admin):
+create_gaps { gaps: [ { user: 'user1', workflow: 'vacation', from: '2026-11-01T00:00:00.000+0000', to: '2026-11-15T00:00:00.000+0000', fullDay: true } ] }
+find_gaps { users: ['user1'], from: '…', to: '…' }
 ```
 
 ## Pitfalls (verified against the live API)

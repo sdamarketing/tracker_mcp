@@ -77,3 +77,37 @@ A `null` value clears a field.
 
 `one-column`, `two-columns`, `three-columns`, `narrow-left-wide-right`,
 `one-top-two-bottom`.
+
+## Comment reaction names
+
+`LIKE`, `DISLIKE`, `LAUGH`, `HOORAY`, `CONFUSED`, `HEART`, `ROCKET`, `EYES`,
+`FIRE`, `OK`, `FACEPALM`, `CHECK`.
+
+## Access right structures
+
+Queue access (`set_queue_access`): actions `create | write | read | grant |
+deny` → each targets `users` (logins/ids), `groups` (ids), `roles` (`author`,
+`assignee`, `follower`, `access`). Arrays overwrite, `{"add": […]}` /
+`{"remove": […]}` apply deltas. `deny` supports only users and groups.
+
+Entity permissions (`update_entity_permissions`): grant/revoke per `READ` |
+`GRANT` | `WRITE` → `users`, `groups`, `roles` (`AUTHOR`, `OWNER`, `CLIENT`,
+`FOLLOWER`, `MEMBER`).
+
+## Absence types (gaps)
+
+`vacation`, `paid_day_off`, `illness`, `absence`, `trip`, `conference_trip`,
+`conference`, `learning`, `maternity`, `duty`.
+
+## Issue field type class names (create_issue_field / create_queue_local_field)
+
+`ru.yandex.startrek.core.fields.` + `StringFieldType` | `TextFieldType` |
+`DateFieldType` | `DateTimeFieldType` | `FloatFieldType` | `IntegerFieldType` |
+`UserFieldType` | `UriFieldType` | `MoneyFieldType` | `MoneyWithRateFieldType` |
+`TimeTrackingDurationFieldType`.
+
+## Issue field categories
+
+Category ids come from `get_issue_fields` (each field shows its `category`) —
+pass the category id string to `create_issue_field` /
+`create_issue_field_category` creates new ones.
