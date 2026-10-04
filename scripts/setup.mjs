@@ -18,6 +18,8 @@ const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 const INDEX_JS = path.join(REPO_ROOT, 'dist', 'index.js');
 const DOTENV = path.join(REPO_ROOT, '.env');
 const SERVER_NAME = 'yandex-tracker';
+const SKILL_SOURCE = process.env.TRAKER_SKILL_SOURCE ?? 'sdamarketing/tracker_mcp';
+const SKILL_NAME = 'yandex-tracker';
 
 // --- Консоль ---------------------------------------------------------------
 
@@ -579,6 +581,35 @@ async function main() {
 
     if (!(await askYesNo(prompt, '  Настроить ещё один клиент?', false))) {
       break;
+    }
+  }
+
+  // Скилл для AI-агентов (skills.sh) ------------------------------------------------
+
+  if (process.env.TRAKER_NO_SKILL !== '1') {
+    if (await askYesNo(prompt, `  Установить скилл ${SKILL_NAME} для AI-агентов? (npx skills add)`)) {
+      const npxBin = resolveCommand('npx');
+      if (npxBin) {
+        say('  … npx skills add (скачивает CLI при первом запуске)');
+        const run = spawnSync(
+          npxBin,
+          ['-y', 'skills', 'add', SKILL_SOURCE, '--skill', SKILL_NAME, '-y'],
+          { stdio: 'inherit', encoding: 'utf8' },
+        );
+        if (run.status === 0) {
+          configured.push({
+            client: `Скилл ${SKILL_NAME} (skills.sh)`,
+            report: [
+              `установлен: npx skills add ${SKILL_SOURCE}`,
+              'агенты получат подсказки по языку запросов и значениям полей Трекера.',
+            ],
+          });
+        } else {
+          warn(`Скилл не установился — можно позже: npx skills add ${SKILL_SOURCE}`);
+        }
+      } else {
+        warn(`npx не найден — скилл можно установить позже: npx skills add ${SKILL_SOURCE}`);
+      }
     }
   }
 

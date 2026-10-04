@@ -1,5 +1,8 @@
 # traker-mcp — MCP-сервер для Яндекс Трекера
 
+[![skills.sh](https://skills.sh/b/sdamarketing/tracker_mcp?style=flat-square)](https://skills.sh/sdamarketing/tracker_mcp)
+[![install](https://img.shields.io/badge/curl%20%7C%20bash-установка-22c55e?style=flat-square)](https://raw.githubusercontent.com/sdamarketing/tracker_mcp/main/install.sh)
+
 Проще говоря: **этот сервер учит вашего AI-ассистента работать с Яндекс Трекером.**
 Вы говорите ассистенту «найди мои задачи», «создай задачу в очереди TREK», «закрой
 TASK-123 с резолюцией “Решён”» — а он делает это через API Трекера сам, без копирования ссылок руками.
@@ -27,6 +30,21 @@ Claude Code, opencode, Windsurf, Zed, JetBrains AI Assistant**.
 | **Дашборды** | создание дашбордов и виджетов («Время цикла») |
 | **Проекты, цели, портфели** | поиск, создание, редактирование, комментарии |
 | **Справочники** | статусы, типы, приоритеты, резолюции, поля, пользователи |
+
+## Скилл для AI-агентов (skills.sh)
+
+К серверу прилагается **скилл `yandex-tracker`** — процедурные знания для агента:
+язык запросов Трекера, корректные значения полей (приоритеты, статусы, резолюции),
+рецепты («найди мои задачи», «закрой с резолюцией», bulk-правки) и грабли API
+(`dueDate` vs `releaseDate`, обязательная резолюция при закрытии, IAM-токены ≤12ч).
+
+```bash
+npx skills add sdamarketing/tracker_mcp
+```
+
+Устанавливает скилл во все обнаруженные агенты (Claude Code, Cursor, opencode,
+Codex и ещё 75+). Мастер `npm run setup` тоже предлагает установить скилл
+вместе с настройкой MCP-клиента. Репозиторий скилла: [skills.sh/sdamarketing/tracker_mcp](https://skills.sh/sdamarketing/tracker_mcp).
 
 ## Установка в одну команду (macOS / Linux / WSL)
 
