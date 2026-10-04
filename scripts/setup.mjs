@@ -54,6 +54,7 @@ function createPromptSession() {
     rl: null,
     queued: [],
     waiting: [],
+    closed: false,
     spawn() {
       session.rl = createInterface({ input: process.stdin, output: process.stdout });
       session.rl.on('line', (line) => {
@@ -62,6 +63,7 @@ function createPromptSession() {
         else session.queued.push(line);
       });
       session.rl.on('close', () => {
+        session.closed = true;
         while (session.waiting.length) session.waiting.shift()('');
       });
     },
@@ -69,6 +71,10 @@ function createPromptSession() {
       process.stdout.write(text);
       if (session.queued.length > 0) {
         return Promise.resolve(session.queued.shift());
+      }
+      // Ввод закончился (EOF/закрытый терминал) — дальше ждуть нечего.
+      if (session.closed) {
+        return Promise.resolve('');
       }
       return new Promise((resolve) => session.waiting.push(resolve));
     },
@@ -125,6 +131,9 @@ function hiddenRaw(text) {
 async function askNumber(promptSession, text, min, max) {
   for (;;) {
     const raw = await promptSession.question(text);
+    if (raw === '' && promptSession.closed) {
+      throw new Error('Ввод прерван (терминал закрыт). Запустите `npm run setup` заново.');
+    }
     const n = Number.parseInt(raw, 10);
     if (!Number.isNaN(n) && n >= min && n <= max) {
       return n;
