@@ -4,3 +4,5 @@ dist/
 .env
 
 install-links.html
+.agents/
+.claude/
