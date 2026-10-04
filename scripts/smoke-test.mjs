@@ -18,10 +18,11 @@ const EXPECTED_TOOLS = [
   'bulk_update_issues', 'bulk_move_issues', 'bulk_transition_issues', 'get_bulk_operation_info',
   // queues
   'get_queues', 'get_queue', 'create_queue', 'get_queue_fields', 'get_queue_versions',
-  'create_queue_version', 'get_queue_components', 'get_queue_local_fields',
+  'create_queue_version', 'get_queue_components', 'create_component', 'get_queue_local_fields',
   'get_queue_macroses', 'get_queue_tags', 'get_queue_triggers', 'get_queue_autoactions',
-  // boards / projects / entities
+  // boards / dashboards / projects / entities
   'get_boards', 'get_board', 'get_board_columns', 'get_board_sprints',
+  'create_board', 'create_dashboard', 'create_cycle_time_widget',
   'get_projects', 'get_project', 'create_project', 'update_project', 'delete_project',
   'search_entities', 'get_entity', 'create_entity', 'update_entity', 'delete_entity',
   'add_entity_comment', 'get_entity_comments',

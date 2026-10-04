@@ -12,6 +12,7 @@ import { registerAttachmentTools } from './tools/attachments.js';
 import { registerBulkTools } from './tools/bulk.js';
 import { registerQueueTools } from './tools/queues.js';
 import { registerBoardTools } from './tools/boards.js';
+import { registerDashboardTools } from './tools/dashboards.js';
 import { registerProjectTools } from './tools/projects.js';
 import { registerEntityTools } from './tools/entities.js';
 import { registerUserTools, registerAdminTools } from './tools/users.js';
@@ -33,6 +34,7 @@ async function main(): Promise<void> {
   registerBulkTools(server, client);
   registerQueueTools(server, client);
   registerBoardTools(server, client);
+  registerDashboardTools(server, client);
   registerProjectTools(server, client);
   registerEntityTools(server, client);
   registerUserTools(server, client);

@@ -110,6 +110,24 @@ export function registerQueueTools(server: McpServer, client: TrackerClient): vo
   );
 
   server.registerTool(
+    'create_component',
+    {
+      description: 'Create a component in a queue.',
+      inputSchema: z.object({
+        name: z.string().describe('Component name'),
+        queue: z.string().describe('Queue key'),
+        description: z.string().optional().describe('Component description'),
+        lead: z.string().optional().describe('Component owner login'),
+        assignAuto: z
+          .boolean()
+          .optional()
+          .describe('Assign the component owner as default assignee'),
+      }),
+    },
+    async (args) => runTool(async () => client.post('/components', args)),
+  );
+
+  server.registerTool(
     'get_queue_components',
     {
       description: 'List components of a queue.',
