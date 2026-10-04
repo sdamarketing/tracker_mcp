@@ -6,3 +6,4 @@ dist/
 install-links.html
 .agents/
 .claude/
+skills-lock.json
