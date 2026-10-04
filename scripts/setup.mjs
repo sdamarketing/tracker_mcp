@@ -200,7 +200,9 @@ function selectInteractiveRaw(promptSession, { items }) {
     const stdin = process.stdin;
     const out = process.stdout;
     const width = Math.max(50, out.columns ?? 80);
-    const frameLines = items.length + 1; // подсказка + пустая + пункты
+    // Кадр = подсказка + пустая строка + пункты. Каждая строка кадра
+    // очищается \x1b[2K: без этого на строке остаются хвосты от прошлого кадра.
+    const frameLines = items.length + 2;
     let cursor = 0;
     let finished = false;
 
@@ -223,9 +225,10 @@ function selectInteractiveRaw(promptSession, { items }) {
     const frame = (moveUp) => {
       let s = moveUp > 0 ? `\x1b[${moveUp}A` : '';
       s += '\x1b[?25l'; // спрятать курсор
-      s += `  ${dim(SELECT_HINT)}\n\n`;
+      s += `\x1b[2K  ${dim(SELECT_HINT)}\n`;
+      s += '\x1b[2K\n';
       for (let i = 0; i < items.length; i++) {
-        s += lineFor(i) + '\n';
+        s += '\x1b[2K' + lineFor(i) + '\n';
       }
       return s;
     };
