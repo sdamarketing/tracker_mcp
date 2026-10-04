@@ -94,7 +94,7 @@ banner() {
   for line in "${ART_ROWS[@]}"; do
     printf '  %s│%s ' "$C_DIM" "$C_OFF"
     gradient "$line"
-    printf '%*s' $((max - ${#line} + 1)) ''
+    printf '%*s' $((max - ${#line})) ''
     printf ' %s│%s\n' "$C_DIM" "$C_OFF"
   done
   printf '  %s│%*s│%s\n' "$C_DIM" $((max + 2)) '' "$C_OFF"
@@ -108,7 +108,7 @@ banner() {
     printf '%*s' "$padl" ''
     printf '%s%s%s' "$C_BOLD" "$line" "$C_OFF"
     printf '%*s' "$padr" ''
-    printf ' %s│%s\n' "$C_DIM" "$C_OFF"
+    printf '%s│%s\n' "$C_DIM" "$C_OFF"
   done
   printf '  %s└%s┘%s\n' "$C_DIM" "$hbar" "$C_OFF"
   printf '\n'
