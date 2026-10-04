@@ -43,46 +43,75 @@ die()   { printf '  %s %s\n' "${C_RED}✖${C_OFF}" "$*" >&2; exit 1; }
 
 # --- Баннер ----------------------------------------------------------------------
 
-# Шрифт: 3 строки на букву, буквы через пробел, всё на «подошве» ▀▀▀▀.
-b1=( "█▀▀█" "█▀▀█" "█▀▀█" "█▀▀▄" "█▀▀▀" "█▀▀█" "" "█▀▀█" "█▀▀█" "█▀▀▄" )
-b2=( "█  █" "█  █" "█▀▀▀" "█  █" "█   " "█  █" "" "█  █" "█▀▀▀" "█▀▀▀" )
-b3=( "▀▀▀▀" "▀▀▀▀" "▀▀▀▀" "▀▀▀▀" "▀▀▀▀" "▀▀▀▀" "" "▀▀▀▀" "▀▀▀▀" "▀▀▀▀" )
-#      T     R     A     K     E     R    ⎵    M     C     P
+# Арт «TRAKER MCP» (figlet-style). Хранится через heredoc: в строках есть
+# бэктики, апострофы и обратные слеши — их нельзя экранировать в кавычках.
+ART_ROWS=()
+while IFS= read -r __banner_line; do ART_ROWS+=("$__banner_line"); done << 'TRAKER_BANNER_EOF'
+__     __             _        _______             _
+\ \   / /            | |      |__   __|           | |
+ \ \_/ /_ _ _ __   __| | ___     | |_ __ __ _  ___| | _____ _ __
+  \   / _` | '_ \ / _` |/ _ \    | | '__/ _` |/ __| |/ / _ \ '__|
+   | | (_| | | | | (_| |  __/    | | | | (_| | (__|   <  __/ |
+   |_|\__,_|_| |_|\__,_|\___|    |_|_|  \__,_|\___|_|\_\___|_|
+TRAKER_BANNER_EOF
+
+BANNER_INFO=(
+  "v${VERSION} · MCP-сервер для Яндекс Трекера"
+  "Автор: ${AUTHOR}"
+  "Исходники: ${REPO_PUBLIC_URL}"
+)
+
+# Отображаемая ширина строки (wc -m учитывает кириллицу в UTF-8 локали).
+dispw() { printf '%s' "$1" | wc -m; }
+
+# Горизонтальный градиент мята → перванш по столбцам (truecolor).
+gradient() {
+  local s="$1"
+  if [ "$TRUECOLOR" != "yes" ]; then
+    printf '%s%s%s' "$C_CYAN" "$s" "$C_OFF"
+    return
+  fi
+  local len=${#s} x r g b
+  local denom=$((len > 1 ? len - 1 : 1))
+  for ((x = 0; x < len; x++)); do
+    r=$((34 + (129 - 34) * x / denom))
+    g=$((197 + (140 - 197) * x / denom))
+    b=$((94 + (248 - 94) * x / denom))
+    printf '\033[38;2;%d;%d;%dm%s' "$r" "$g" "$b" "${s:x:1}"
+  done
+  printf '%s' "$C_OFF"
+}
 
 banner() {
-  local row i r g b part
-  local -a row_out=( "" "" "" )
-  for i in 0 1 2 3 4 5 7 8 9; do
-    if [ "$TRUECOLOR" = "yes" ]; then
-      # Градиент мята → перванш по 9 буквам: (34,197,94) → (129,140,248)
-      case "$i" in
-        0) r=34;   g=197; b=94  ;;
-        1) r=48;   g=190; b=113 ;;
-        2) r=62;   g=182; b=132 ;;
-        3) r=76;   g=174; b=151 ;;
-        4) r=90;   g=167; b=170 ;;
-        5) r=104;  g=159; b=189 ;;
-        7) r=115;  g=153; b=204 ;;
-        8) r=122;  g=146; b=226 ;;
-        9) r=129;  b=248; g=140 ;;
-      esac
-      part=$(printf '\033[38;2;%d;%d;%dm' "$r" "$g" "$b")
-    else
-      part="$C_CYAN"
-    fi
-    row_out[0]+="${part}${b1[$i]} ${C_OFF}"
-    row_out[1]+="${part}${b2[$i]} ${C_OFF}"
-    row_out[2]+="${part}${b3[$i]} ${C_OFF}"
+  local max=0 line w padl padr i hbar
+  for line in "${ART_ROWS[@]}"; do w=${#line}; [ "$w" -gt "$max" ] && max=$w; done
+  for line in "${BANNER_INFO[@]}"; do w=$(dispw "$line"); [ "$w" -gt "$max" ] && max=$w; done
+  hbar=""
+  for ((i = 0; i < max + 2; i++)); do hbar+="─"; done
+
+  printf '\n'
+  printf '  %s┌%s┐%s\n' "$C_DIM" "$hbar" "$C_OFF"
+  for line in "${ART_ROWS[@]}"; do
+    printf '  %s│%s ' "$C_DIM" "$C_OFF"
+    gradient "$line"
+    printf '%*s' $((max - ${#line} + 1)) ''
+    printf ' %s│%s\n' "$C_DIM" "$C_OFF"
   done
+  printf '  %s│%*s│%s\n' "$C_DIM" $((max + 2)) '' "$C_OFF"
+  for line in "${BANNER_INFO[@]}"; do
+    w=$(dispw "$line")
+    padl=$(((max - w) / 2 + 1))
+    [ "$padl" -lt 1 ] && padl=1
+    padr=$((max + 2 - padl - w))
+    [ "$padr" -lt 1 ] && padr=1
+    printf '  %s│%s' "$C_DIM" "$C_OFF"
+    printf '%*s' "$padl" ''
+    printf '%s%s%s' "$C_BOLD" "$line" "$C_OFF"
+    printf '%*s' "$padr" ''
+    printf ' %s│%s\n' "$C_DIM" "$C_OFF"
+  done
+  printf '  %s└%s┘%s\n' "$C_DIM" "$hbar" "$C_OFF"
   printf '\n'
-  printf '  %s\n' "${row_out[0]}"
-  printf '  %s\n' "${row_out[1]}"
-  printf '  %s\n' "${row_out[2]}"
-  printf '%s' "$C_OFF"
-  printf '\n'
-  printf '  %s%s%s · MCP-сервер для Яндекс Трекера%s\n' "$C_BOLD" "v${VERSION}" "$C_DIM" "$C_OFF"
-  printf '  %sАвтор:%s %s%s\n' "$C_DIM" "$C_OFF" "$AUTHOR" "$C_OFF"
-  printf '  %sИсходники:%s %s%s\n\n' "$C_DIM" "$C_OFF" "$REPO_PUBLIC_URL" "$C_OFF"
 }
 
 # --- Спиннер ---------------------------------------------------------------------
