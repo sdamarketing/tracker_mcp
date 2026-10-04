@@ -74,6 +74,27 @@ export function registerProjectTools(server: McpServer, client: TrackerClient): 
   );
 
   server.registerTool(
+    'get_project_queues',
+    {
+      description: 'List queues whose issues are included in a project.',
+      inputSchema: z.object({
+        projectId: z.string().or(z.number()),
+        expand: z
+          .string()
+          .optional()
+          .describe('Comma-separated: all, projects, components, versions, types, team, workflows, fields'),
+      }),
+    },
+    async (args) =>
+      runTool(async () =>
+        client.get(
+          `/projects/${encodeURIComponent(String(args.projectId))}/queues`,
+          args.expand ? { expand: args.expand } : undefined,
+        ),
+      ),
+  );
+
+  server.registerTool(
     'delete_project',
     {
       description: 'Delete a project by id. Issues are not deleted.',

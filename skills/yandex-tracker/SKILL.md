@@ -13,21 +13,25 @@ user install the server first:
 curl -fsSL https://raw.githubusercontent.com/sdamarketing/tracker_mcp/main/install.sh | bash
 ```
 
-## Tool map (71 tools)
+## Tool map (185 tools — full v3 API coverage)
 
 | Task | Tools |
 |---|---|
-| Search / count | `find_issues`, `count_issues` |
-| Issue lifecycle | `create_issue`, `get_issue`, `edit_issue`, `move_issue` |
+| Search / count / suggest | `find_issues` (incl. query2 + scroll >10k), `count_issues`, `get_search_suggest`, `release_search_scroll` |
+| Issue lifecycle | `create_issue`, `get_issue`, `edit_issue`, `move_issue`, `get_issue_changelog` |
 | Statuses | `get_issue_transitions`, `execute_transition` |
-| Links | `get_issue_links`, `create_issue_link`, `delete_issue_link` |
-| Comments / checklist / time | `add_comment`, `get_issue_comments`, `get_checklist`, `add_checklist_item`, `edit_checklist_item`, `add_worklog_record` |
-| Files | `list_issue_attachments`, `upload_issue_attachment` |
-| Bulk | `bulk_update_issues`, `bulk_move_issues`, `bulk_transition_issues`, `get_bulk_operation_info` |
-| Queues | `get_queues`, `get_queue`, `get_queue_fields`, `create_queue`, `create_queue_version`, `create_component` |
-| Boards / dashboards | `get_boards`, `get_board`, `create_board`, `create_dashboard`, `create_cycle_time_widget` |
-| Projects / goals | `create_project`, `search_entities`, `get_entity`, `create_entity`, `update_entity`, `add_entity_comment` |
-| Catalogs & users | `get_current_user`, `get_user`, `get_statuses`, `get_priorities`, `get_resolutions`, `get_issue_types`, `get_issue_fields` |
+| Links / external apps | `get_issue_links`, `create_issue_link`, `delete_issue_link`, `get_external_applications`, `get_external_links`, `create_external_link`, `delete_external_link` |
+| Comments / checklist / time | `add_comment`, `get_issue_comments`, `get_issue_comment`, `edit_comment`, `delete_comment`, `add_comment_reaction`, `get_checklist`, `add_checklist_item`, `edit_checklist_item`, `delete_checklist_item`, `delete_checklist`, `get_issue_worklog`, `add_worklog_record`, `edit_worklog_record`, `delete_worklog_record`, `find_worklog_records` |
+| Files | `list_issue_attachments`, `get_issue_attachment`, `download_issue_attachment`, `get_attachment_thumbnail`, `upload_issue_attachment`, `upload_temp_attachment`, `delete_issue_attachment` |
+| Reports / filters | `create_issue_report`, `find_issue_reports`, `create_filter`, `get_filter`, `update_filter`, `delete_filter` |
+| Bulk | `bulk_update_issues`, `bulk_move_issues`, `bulk_transition_issues`, `get_bulk_operation_info`, `bulk_update_entities` |
+| Queues & config | queues CRUD + `set_queue_access`/`get_queue_user_access`/`get_queue_group_access`, local fields CRUD, components CRUD (+ access), versions CRUD, macros CRUD, triggers (CRUD + logs), autoactions (CRUD + logs), workflows (CRUD + action edit) |
+| Boards / sprints | boards CRUD + `get_boards_paginate`, columns CRUD, sprints: `get_sprint`/`create_sprint`/`update_sprint`/`start_sprint`/`archive_sprint`/`delete_sprint` |
+| Dashboards | `create_dashboard`, `create_cycle_time_widget` |
+| Projects / goals | projects CRUD + `get_project_queues`, entities CRUD + comments/checklists/attachments/links/events/access/permissions |
+| Catalogs & users | reads + writes for issue types, statuses, resolutions, priorities; fields CRUD + categories; `get_users`, `get_users_relative`, `get_user`, `get_current_user` |
+| Absences (gaps) | `create_gaps`, `find_gaps`, `delete_gaps` |
+| Migration (import) | `import_issue`, `import_issue_comment`, `import_issue_link`, `import_worklog_record`, `import_issue_attachment` — admin-only, задним числом |
 
 ## Core rules
 
@@ -178,6 +182,12 @@ create_cycle_time_widget { dashboardId: 7, description: 'Cycle time TREK', query
   `extraFields`/`values`.
 - `find_issues` with two search params silently uses the higher-priority one;
   three or more → 400 «only keys, queue or query».
+- **Optimistic locking**: editing fields, components, triggers, workflows,
+  board columns and sprints requires the current `version` (query param or
+  board/sprint `version` arg); a mismatch returns 412 — re-fetch and retry.
+- Entity write endpoints wrap everything in `fields`; the tools do this for
+  you — pass `fields: {…}` per the tool schema.
+- `delete_filter` is the only v2-documented endpoint — the tool handles it.
 - 403 «Organization is not available, not ready or not found» → wrong
   `TRACKER_ORG_ID` or Tracker not enabled for the org — fix credentials,
   don't retry.
@@ -187,6 +197,11 @@ create_cycle_time_widget { dashboardId: 7, description: 'Cycle time TREK', query
 - Moving an issue to another queue clears components/versions/projects unless
   `moveAllFields: true`, and drops old-queue local fields.
 - The API works in UTC: created/updated timestamps come back UTC±00:00.
+- `download_issue_attachment` returns images as image content, text files as
+  text, binaries as base64 (≤8 МБ). Use `upload_temp_attachment` first to
+  attach to entity descriptions/comments.
+- Import tools (`import_*`) create records «задним числом» with custom
+  authors/dates — only for migration, admin rights required.
 
 ## References
 

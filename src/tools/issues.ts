@@ -94,6 +94,16 @@ export function registerIssueTools(server: McpServer, client: TrackerClient): vo
           .string()
           .optional()
           .describe('Sort order (only with "filter"): [+/-]FIELD, e.g. "+updatedAt"'),
+        scrollType: z
+          .enum(['sorted', 'unsorted'])
+          .optional()
+          .describe(
+            'Enable result scrolling for large sets: "sorted" keeps the order, ' +
+            '"unsorted" is cheaper. First request only.',
+          ),
+        perScroll: z.number().optional().describe('Max issues per scroll page (default 100, max 1000)'),
+        scrollTTLMillis: z.number().optional().describe('Scroll context lifetime, ms (default 60000)'),
+        scrollId: z.string().optional().describe('Scroll page id from the previous response'),
         fields: fieldsParam,
         expand: expandParam,
         perPage: z.number().optional().describe('Results per page, default 50'),
@@ -102,7 +112,11 @@ export function registerIssueTools(server: McpServer, client: TrackerClient): vo
     },
     async (args) =>
       runTool(async () => {
-        const { queue, keys, filter, filterId, query, query2, order, ...params } = args;
+        const {
+          queue, keys, filter, filterId, query, query2, order,
+          scrollType, perScroll, scrollTTLMillis, scrollId,
+          ...params
+        } = args;
         const body: Record<string, unknown> = {};
         const searchParams: Array<[string, unknown]> = [
           ['queue', queue],
@@ -120,6 +134,24 @@ export function registerIssueTools(server: McpServer, client: TrackerClient): vo
         }
         body[searchParam[0]] = searchParam[1];
         if (order !== undefined) body.order = order;
+        const scrolling =
+          scrollType !== undefined || perScroll !== undefined || scrollTTLMillis !== undefined || scrollId !== undefined;
+        if (scrolling) {
+          const { data, headers } = await client.postWithHeaders<unknown[]>('/issues/_search', body, {
+            ...params,
+            scrollType,
+            perScroll,
+            scrollTTLMillis,
+            scrollId,
+          });
+          const scrollInfo: Record<string, unknown> = {
+            hint: 'Передайте scrollId (и scrollToken при наличии) в следующий вызов find_issues; по завершении вызовите release_search_scroll.',
+            totalCount: headers['x-total-count'],
+          };
+          if (headers['x-scroll-id']) scrollInfo.scrollId = headers['x-scroll-id'];
+          if (headers['x-scroll-token']) scrollInfo.scrollToken = headers['x-scroll-token'];
+          return { _scroll: scrollInfo, issues: data };
+        }
         return client.post<unknown[]>('/issues/_search', body, params);
       }),
   );
@@ -279,13 +311,51 @@ export function registerIssueTools(server: McpServer, client: TrackerClient): vo
   server.registerTool(
     'get_issue_links',
     {
-      description: 'List links of an issue (related, dependent, subtask, duplicate, epic links).',
+      description:
+        'List links of an issue (related, dependent, subtask, duplicate, epic links). ' +
+        'Pass perPage/page for the paginated variant.',
       inputSchema: z.object({
         issueId: z.string().describe('Issue key or id'),
+        perPage: z.number().optional().describe('Results per page (enables paginated mode)'),
+        page: z.number().optional().describe('Page number, default 1'),
+        linkTypes: z
+          .array(z.string())
+          .optional()
+          .describe('Filter by link type keys (paginated mode only)'),
+        fields: z.string().optional().describe('Comma-separated issue fields (paginated mode only)'),
       }),
     },
     async (args) =>
-      runTool(async () => client.get(`/issues/${encodeURIComponent(args.issueId)}/links`)),
+      runTool(async () => {
+        const { issueId, perPage, page, linkTypes, fields } = args;
+        if (perPage !== undefined || page !== undefined) {
+          const body: Record<string, unknown> = {};
+          if (linkTypes) body.linkTypes = linkTypes;
+          if (fields) body.fields = fields;
+          return client.post(
+            `/issues/${encodeURIComponent(issueId)}/links/_list`,
+            body,
+            { perPage, page },
+          );
+        }
+        return client.get(`/issues/${encodeURIComponent(issueId)}/links`);
+      }),
+  );
+
+  server.registerTool(
+    'release_search_scroll',
+    {
+      description:
+        'Free scroll-search resources when you stopped paging through a scrolled ' +
+        'find_issues result. Body: {"<scrollId>": "<scrollToken>"} for every page you opened.',
+      inputSchema: z.object({
+        scrollTokens: z
+          .record(z.string(), z.string())
+          .describe('Map scrollId → scrollToken from find_issues responses'),
+      }),
+    },
+    async (args) =>
+      runTool(async () => client.post('/system/search/scroll/_clear', args.scrollTokens)),
   );
 
   server.registerTool(

@@ -59,6 +59,47 @@ export function registerCommentTools(server: McpServer, client: TrackerClient): 
   );
 
   server.registerTool(
+    'get_issue_comment',
+    {
+      description: 'Get one comment of an issue by id (numeric id or longId).',
+      inputSchema: z.object({
+        issueId: z.string().describe('Issue key or id'),
+        commentId: z.string().describe('Comment id or longId'),
+        expand: z.string().optional().describe('"attachments", "html" or "all"'),
+      }),
+    },
+    async (args) =>
+      runTool(async () => {
+        const { issueId, commentId, expand } = args;
+        return client.get(
+          `/issues/${encodeURIComponent(issueId)}/comments/${encodeURIComponent(commentId)}`,
+          expand ? { expand } : undefined,
+        );
+      }),
+  );
+
+  server.registerTool(
+    'add_comment_reaction',
+    {
+      description: 'Add a reaction to a comment.',
+      inputSchema: z.object({
+        issueId: z.string().describe('Issue key or id'),
+        commentId: z.string().describe('Comment id or longId'),
+        reaction: z
+          .enum(['LIKE', 'DISLIKE', 'LAUGH', 'HOORAY', 'CONFUSED', 'HEART', 'ROCKET', 'EYES', 'FIRE', 'OK', 'FACEPALM', 'CHECK'])
+          .describe('Reaction name'),
+      }),
+    },
+    async (args) =>
+      runTool(async () => {
+        const { issueId, commentId, reaction } = args;
+        return client.post(
+          `/issues/${encodeURIComponent(issueId)}/comments/${encodeURIComponent(commentId)}/reactions/${reaction}`,
+        );
+      }),
+  );
+
+  server.registerTool(
     'delete_comment',
     {
       description: 'Delete a comment from an issue.',

@@ -58,6 +58,32 @@ export function registerWorklogTools(server: McpServer, client: TrackerClient): 
   );
 
   server.registerTool(
+    'find_worklog_records',
+    {
+      description:
+        'Search worklog records across all issues by author and/or creation date range.',
+      inputSchema: z.object({
+        createdBy: z.string().optional().describe('Author login or id'),
+        createdFrom: z.string().optional().describe('From, YYYY-MM-DDThh:mm:ss.sss±hhmm'),
+        createdTo: z.string().optional().describe('To, YYYY-MM-DDThh:mm:ss.sss±hhmm'),
+      }),
+    },
+    async (args) => {
+      return runTool(async () => {
+        const body: Record<string, unknown> = {};
+        if (args.createdBy !== undefined) body.createdBy = args.createdBy;
+        if (args.createdFrom !== undefined || args.createdTo !== undefined) {
+          body.createdAt = {
+            from: args.createdFrom,
+            to: args.createdTo,
+          };
+        }
+        return client.post('/worklog/_search', body);
+      });
+    },
+  );
+
+  server.registerTool(
     'delete_worklog_record',
     {
       description: 'Delete a time tracking record (worklog).',

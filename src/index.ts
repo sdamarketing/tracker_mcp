@@ -16,6 +16,13 @@ import { registerDashboardTools } from './tools/dashboards.js';
 import { registerProjectTools } from './tools/projects.js';
 import { registerEntityTools } from './tools/entities.js';
 import { registerUserTools, registerAdminTools } from './tools/users.js';
+import { registerFieldTools } from './tools/fields.js';
+import { registerExternalLinkTools } from './tools/externals.js';
+import { registerFilterTools } from './tools/filters.js';
+import { registerReportTools } from './tools/reports.js';
+import { registerWorkflowTools } from './tools/workflows.js';
+import { registerGapTools } from './tools/gaps.js';
+import { registerImportTools } from './tools/import.js';
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -39,6 +46,13 @@ async function main(): Promise<void> {
   registerEntityTools(server, client);
   registerUserTools(server, client);
   registerAdminTools(server, client);
+  registerFieldTools(server, client);
+  registerExternalLinkTools(server, client);
+  registerFilterTools(server, client);
+  registerReportTools(server, client);
+  registerWorkflowTools(server, client);
+  registerGapTools(server, client);
+  registerImportTools(server, client);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

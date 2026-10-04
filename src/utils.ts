@@ -1,9 +1,29 @@
 import type { CallToolResult } from '@modelcontextprotocol/server';
 
 export function jsonResult(data: unknown): CallToolResult {
+  // 204 No Content и пустые ответы дают undefined — сериализуем как null.
+  const text = data === undefined ? 'null' : JSON.stringify(data, null, 2);
   return {
-    content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+    content: [{ type: 'text', text }],
   };
+}
+
+/** Картинка как image-контент (клиенты показывают её визуально). */
+export function imageResult(data: Buffer, mimeType: string): CallToolResult {
+  return {
+    content: [
+      {
+        type: 'image',
+        data: data.toString('base64'),
+        mimeType,
+      },
+    ],
+  };
+}
+
+/** Текст без JSON-обёртки (содержимое файлов и т.п.). */
+export function textResult(text: string): CallToolResult {
+  return { content: [{ type: 'text', text }] };
 }
 
 export function errorResult(message: string): CallToolResult {

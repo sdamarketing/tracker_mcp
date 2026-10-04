@@ -116,6 +116,20 @@ export function registerChecklistTools(server: McpServer, client: TrackerClient)
   );
 
   server.registerTool(
+    'delete_checklist',
+    {
+      description: 'Delete the whole checklist of an issue.',
+      inputSchema: z.object({
+        issueId: z.string().describe('Issue key or id'),
+      }),
+    },
+    async (args) =>
+      runTool(async () =>
+        client.delete(`/issues/${encodeURIComponent(args.issueId)}/checklistItems`),
+      ),
+  );
+
+  server.registerTool(
     'delete_checklist_item',
     {
       description: 'Delete a checklist item from an issue.',

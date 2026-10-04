@@ -10,12 +10,19 @@ export class TrackerApiError extends Error {
   }
 }
 
+export interface ResponseWithHeaders<T> {
+  data: T;
+  headers: Record<string, string>;
+}
+
 export type QueryParams = Record<string, string | number | boolean | undefined>;
 
 interface RequestOptions {
   query?: QueryParams;
   body?: unknown;
   formData?: FormData;
+  /** Оптимистичная блокировка редактирования (412 при конфликте версий). */
+  ifMatch?: string | number;
 }
 
 function formatErrorBody(status: number, text: string): string {
@@ -49,6 +56,18 @@ export class TrackerClient {
     return this.config.authMethod === 'iam' ? 'X-Cloud-Org-ID' : 'X-Org-ID';
   }
 
+  /**
+   * Пути с явной версией ("/v2/filters/…") заменяют версию из baseUrl —
+   * некоторые эндпоинты документированы только в v2 (например, delete filter).
+   */
+  private resolvePath(path: string): string {
+    const match = /^\/(v\d+)\//.exec(path);
+    if (match && this.config.baseUrl.endsWith('/v3')) {
+      return this.config.baseUrl.slice(0, -3) + path;
+    }
+    return this.config.baseUrl + path;
+  }
+
   private authHeaders(): Record<string, string> {
     const { authMethod, apiToken, orgId } = this.config;
     return {
@@ -59,7 +78,7 @@ export class TrackerClient {
   }
 
   async request<T>(method: string, path: string, options: RequestOptions = {}): Promise<T> {
-    const url = new URL(this.config.baseUrl + path);
+    const url = new URL(this.resolvePath(path));
     for (const [key, value] of Object.entries(options.query ?? {})) {
       if (value !== undefined) {
         url.searchParams.set(key, String(value));
@@ -69,6 +88,9 @@ export class TrackerClient {
     const headers: Record<string, string> = { ...this.authHeaders() };
     if (this.config.lang) {
       headers['Accept-Language'] = this.config.lang;
+    }
+    if (options.ifMatch !== undefined) {
+      headers['If-Match'] = String(options.ifMatch);
     }
 
     let body: BodyInit | undefined;
@@ -112,15 +134,96 @@ export class TrackerClient {
     body?: unknown,
     query?: QueryParams,
     formData?: FormData,
+    ifMatch?: string | number,
   ): Promise<T> {
-    return this.request<T>('POST', path, { body, query, formData });
+    return this.request<T>('POST', path, { body, query, formData, ifMatch });
   }
 
-  patch<T>(path: string, body?: unknown, query?: QueryParams): Promise<T> {
-    return this.request<T>('PATCH', path, { body, query });
+  /** POST с заголовками ответа (нужно для scroll-поиска: X-Scroll-Id и т.п.). */
+  async postWithHeaders<T>(
+    path: string,
+    body?: unknown,
+    query?: QueryParams,
+  ): Promise<ResponseWithHeaders<T>> {
+    const url = new URL(this.resolvePath(path));
+    for (const [key, value] of Object.entries(query ?? {})) {
+      if (value !== undefined) {
+        url.searchParams.set(key, String(value));
+      }
+    }
+    const headers: Record<string, string> = {
+      ...this.authHeaders(),
+      'Content-Type': 'application/json',
+    };
+    if (this.config.lang) {
+      headers['Accept-Language'] = this.config.lang;
+    }
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body ?? {}),
+    });
+    if (!response.ok) {
+      const text = await response.text().catch(() => '');
+      throw new TrackerApiError(
+        response.status,
+        formatErrorBody(response.status, text),
+      );
+    }
+    const outHeaders: Record<string, string> = {};
+    response.headers.forEach((value, key) => {
+      outHeaders[key] = value;
+    });
+    const text = await response.text();
+    return {
+      data: text ? (JSON.parse(text) as T) : (undefined as T),
+      headers: outHeaders,
+    };
   }
 
-  delete<T>(path: string, query?: QueryParams): Promise<T> {
-    return this.request<T>('DELETE', path, { query });
+  /** GET бинарного ресурса (вложения, миниатюры). */
+  async download(
+    path: string,
+    query?: QueryParams,
+  ): Promise<{ buffer: Buffer; contentType: string }> {
+    const url = new URL(this.resolvePath(path));
+    for (const [key, value] of Object.entries(query ?? {})) {
+      if (value !== undefined) {
+        url.searchParams.set(key, String(value));
+      }
+    }
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: this.authHeaders(),
+    });
+    if (!response.ok) {
+      const text = await response.text().catch(() => '');
+      throw new TrackerApiError(
+        response.status,
+        formatErrorBody(response.status, text),
+      );
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    return {
+      buffer: Buffer.from(arrayBuffer),
+      contentType: response.headers.get('content-type') ?? 'application/octet-stream',
+    };
+  }
+
+  patch<T>(
+    path: string,
+    body?: unknown,
+    query?: QueryParams,
+    ifMatch?: string | number,
+  ): Promise<T> {
+    return this.request<T>('PATCH', path, { body, query, ifMatch });
+  }
+
+  delete<T>(
+    path: string,
+    query?: QueryParams,
+    ifMatch?: string | number,
+  ): Promise<T> {
+    return this.request<T>('DELETE', path, { query, ifMatch });
   }
 }
