@@ -281,8 +281,9 @@ const CLIENTS = {
 // --- Мастер -----------------------------------------------------------------------
 
 async function main() {
+  const pkg = JSON.parse(readFileSync(path.join(REPO_ROOT, 'package.json'), 'utf8'));
   console.log('');
-  console.log(bold('traker-mcp · Мастер установки Яндекс Трекера для AI-агентов'));
+  console.log(bold(`traker-mcp v${pkg.version} · Мастер установки Яндекс Трекера для AI-агентов`));
   console.log(cyan('═══════════════════════════════════════════════════════════════'));
 
   const prompt = createPromptSession();
