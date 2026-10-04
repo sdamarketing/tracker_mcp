@@ -563,6 +563,7 @@ async function main() {
   // [5/5] Установка (+ цикл «ещё один клиент») ----------------------------------------
 
   const configured = [];
+  const configuredKeys = [];
   for (;;) {
     const idx = await chooseFromList(prompt, {
       title: 'Клиент:',
@@ -578,6 +579,7 @@ async function main() {
     console.log('');
     const result = await installForClient(clientKey, { token, orgId, auth }, prompt);
     configured.push(result);
+    configuredKeys.push(clientKey);
 
     if (!(await askYesNo(prompt, '  Настроить ещё один клиент?', false))) {
       break;
@@ -586,31 +588,94 @@ async function main() {
 
   // Скилл для AI-агентов (skills.sh) ------------------------------------------------
 
+  let skillStatus = 'не установлен';
   if (process.env.TRAKER_NO_SKILL !== '1') {
-    if (await askYesNo(prompt, `  Установить скилл ${SKILL_NAME} для AI-агентов? (npx skills add)`)) {
-      const npxBin = resolveCommand('npx');
-      if (npxBin) {
-        say('  … npx skills add (скачивает CLI при первом запуске)');
-        const run = spawnSync(
-          npxBin,
-          ['-y', 'skills', 'add', SKILL_SOURCE, '--skill', SKILL_NAME, '-y'],
-          { stdio: 'inherit', encoding: 'utf8' },
-        );
-        if (run.status === 0) {
-          configured.push({
-            client: `Скилл ${SKILL_NAME} (skills.sh)`,
-            report: [
-              `установлен: npx skills add ${SKILL_SOURCE}`,
-              'агенты получат подсказки по языку запросов и значениям полей Трекера.',
-            ],
+    const npxBin = resolveCommand('npx');
+    if (!npxBin) {
+      warn(`npx не найден — скилл можно установить позже: npx skills add ${SKILL_SOURCE}`);
+    } else {
+      // Определяем, установлен ли скилл уже (глобально или в проекте).
+      console.log('  … проверяю установленный скилл (npx skills ls)');
+      const ls = spawnSync(npxBin, ['-y', 'skills', 'ls'], { encoding: 'utf8' });
+      const installed = (ls.stdout ?? '').includes(SKILL_NAME);
+
+      if (installed) {
+        // Уже установлен → предлагаем обновление.
+        if (await askYesNo(prompt, `  Скилл ${SKILL_NAME} уже установлен. Обновить до последней версии?`)) {
+          const run = spawnSync(npxBin, ['-y', 'skills', 'update', SKILL_NAME, '-y'], {
+            stdio: 'inherit',
+            encoding: 'utf8',
           });
+          if (run.status === 0) {
+            skillStatus = 'обновлён';
+            configured.push({
+              client: `Скилл ${SKILL_NAME} (skills.sh)`,
+              report: ['обновлён до последней версии (npx skills update)'],
+            });
+          } else {
+            skillStatus = 'обновление не удалось';
+            warn(`Обновить не удалось — можно позже: npx skills update ${SKILL_NAME}`);
+          }
         } else {
-          warn(`Скилл не установился — можно позже: npx skills add ${SKILL_SOURCE}`);
+          skillStatus = 'установлен (обновление отклонено)';
+        }
+      } else if (
+        await askYesNo(prompt, `  Установить скилл ${SKILL_NAME} для AI-агентов? (npx skills add)`)
+      ) {
+        // В TTY запускаем интерактивно: skills CLI сам покажет свой селектор
+        // агентов (↑↓ + Enter). Не-TTY (CI, pipe) — тихо ставим тем агентам,
+        // чьих клиентов только что настроили в мастере.
+        console.log('  … npx skills add (при первом запуске CLI скачивается)');
+        const SKILL_AGENTS = {
+          vscode: 'github-copilot',
+          cursor: 'cursor',
+          claudeDesktop: 'claude-code',
+          claudeCode: 'claude-code',
+          opencode: 'opencode',
+          windsurf: 'windsurf',
+          zed: 'zed',
+        };
+        const args = ['-y', 'skills', 'add', SKILL_SOURCE, '--skill', SKILL_NAME];
+        if (!IS_TTY) {
+          const agents = [...new Set(configuredKeys.map((k) => SKILL_AGENTS[k]).filter(Boolean))];
+          if (agents.length === 0) {
+            warn(`Интерактивный выбор агентов недоступен — установите скилл сами: npx skills add ${SKILL_SOURCE}`);
+          } else {
+            args.push('-y', '-a', ...agents);
+            const run = spawnSync(npxBin, args, { encoding: 'utf8' });
+            if (run.status === 0) {
+              skillStatus = `установлен (агенты: ${agents.join(', ')})`;
+              configured.push({
+                client: `Скилл ${SKILL_NAME} (skills.sh)`,
+                report: [`установлен: npx skills add ${SKILL_SOURCE} -a ${agents.join(' -a ')}`],
+              });
+            } else {
+              skillStatus = 'установка не удалась';
+              warn((run.stderr || run.stdout || '').trim().slice(0, 120));
+            }
+          }
+        } else {
+          const run = spawnSync(npxBin, args, { stdio: 'inherit', encoding: 'utf8' });
+          if (run.status === 0) {
+            skillStatus = 'установлен';
+            configured.push({
+              client: `Скилл ${SKILL_NAME} (skills.sh)`,
+              report: [
+                `установлен: npx skills add ${SKILL_SOURCE}`,
+                'агенты получат подсказки по языку запросов и значениям полей Трекера.',
+              ],
+            });
+          } else {
+            skillStatus = 'установка не удалась';
+            warn(`Скилл не установился — можно позже: npx skills add ${SKILL_SOURCE}`);
+          }
         }
       } else {
-        warn(`npx не найден — скилл можно установить позже: npx skills add ${SKILL_SOURCE}`);
+        skillStatus = 'пропущен';
       }
     }
+  } else {
+    skillStatus = 'пропущен (TRAKER_NO_SKILL=1)';
   }
 
   // Сохранение ключей -----------------------------------------------------------------
@@ -637,6 +702,7 @@ async function main() {
   console.log(`  Команда:   ${process.execPath} ${INDEX_JS}`);
   console.log(`  Аккаунт:   ${account ?? 'не проверен'}`);
   console.log(`  Токен:     ${auth === 'iam' ? 'IAM (X-Cloud-Org-ID) — живёт ≤12 часов' : 'OAuth (X-Org-ID)'}`);
+  console.log(`  Скилл:     ${skillStatus}`);
   console.log('');
   for (const entry of configured) {
     console.log(`  ${bold(entry.client)}`);
