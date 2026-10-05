@@ -76,11 +76,12 @@ Claude Code, opencode, Windsurf, Zed, JetBrains) и итоговый отчёт.
 
 ```bash
 npm install -g tracker-mcp
+tracker-mcp setup     # интерактивный мастер: ключи Трекера + настройка AI-клиента
 ```
 
-Дальше в конфиге вашего AI-клиента укажите команду `tracker-mcp` и переменные
-`TRACKER_TOKEN` / `TRACKER_ORG_ID` (примеры блоков — в таблице ниже или
-`npm run links` из git-копии сгенерирует их с вашими ключами автоматически).
+После этого сервер доступен командой `tracker-mcp` (в конфиг AI-клиента её и
+прописывайте). Другие команды: `tracker-mcp update`, `tracker-mcp links`,
+`tracker-mcp --help`.
 
 ## Ручная установка (Windows или без curl)
 

@@ -14,7 +14,15 @@ const run = (cmd, args) => {
 };
 
 if (!existsSync(path.join(root, '.git'))) {
-  console.log('Эта копия установлена не через git-клон — обновите её через ваш пакетный менеджер.');
+  console.log('Эта копия установлена из npm. Обновление:');
+  console.log('  npm install -g tracker-mcp@latest');
+  if (process.env.TRAKER_NO_SKILL !== '1') {
+    try {
+      run('npx', ['-y', 'skills', 'update', 'yandex-tracker']);
+    } catch {
+      console.log('(скилл не обновлён — не критично)');
+    }
+  }
   process.exit(0);
 }
 

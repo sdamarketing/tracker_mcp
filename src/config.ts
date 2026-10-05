@@ -15,7 +15,7 @@ function requireEnv(name: string): string {
   if (!value) {
     throw new ConfigError(
       `Missing required environment variable ${name}. ` +
-      `Set it before starting the server.`,
+        `Set it in your MCP client config, or run "tracker-mcp setup" to configure everything interactively.`,
     );
   }
   return value;

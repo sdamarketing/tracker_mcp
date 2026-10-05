@@ -1,12 +1,12 @@
 {
   "name": "tracker-mcp",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MCP server for Yandex Tracker API v3 — full coverage (185 tools): issues, queues, boards, sprints, projects, goals, bulk ops, admin catalogs",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "tracker-mcp": "dist/index.js",
-    "traker-mcp": "dist/index.js"
+    "tracker-mcp": "bin/tracker-mcp.mjs",
+    "traker-mcp": "bin/tracker-mcp.mjs"
   },
   "engines": {
     "node": ">=20"
@@ -47,6 +47,7 @@
     "ai-agents"
   ],
   "files": [
+    "bin",
     "dist",
     "skills",
     "scripts",
