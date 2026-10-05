@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { readFileSync } from 'node:fs';
 import { McpServer } from '@modelcontextprotocol/server';
 import { StdioServerTransport } from '@modelcontextprotocol/server/stdio';
 import { loadConfig } from './config.js';
@@ -30,7 +31,10 @@ async function main(): Promise<void> {
 
   const server = new McpServer({
     name: 'yandex-tracker',
-    version: '0.1.0',
+    // Версия берётся из package.json (genversion не нужен — читаем файл рядом с dist)
+    version: JSON.parse(
+      readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+    ).version as string,
   });
 
   registerIssueTools(server, client);
