@@ -1,0 +1,28 @@
+name: Publish packages
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  github-packages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: '@sdamarketing'
+      - run: npm ci
+      # GitHub Packages требует scoped-имя: @sdamarketing/tracker-mcp
+      - run: npm pkg set name=@sdamarketing/tracker-mcp
+      - run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
