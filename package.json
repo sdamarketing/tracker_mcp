@@ -35,7 +35,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sdamarketing/tracker_mcp.git"
+    "url": "git+https://github.com/sdamarketing/tracker_mcp.git"
   },
   "homepage": "https://github.com/sdamarketing/tracker_mcp",
   "keywords": [
