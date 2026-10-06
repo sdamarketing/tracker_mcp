@@ -345,6 +345,11 @@ create_entity(project, fields={summary via arg only — see schema; description,
 - Comments: `type: "standard"` is the default; reactions list: LIKE, DISLIKE, LAUGH,
   HOORAY, CONFUSED, HEART, ROCKET, EYES, FIRE, OK, FACEPALM, CHECK.
 
+**Introspection:** `get_link_types` lists the link-type catalog (relates/depends/subtask/
+duplicates/epic/clone with inward/outward names). Server note: tools carry MCP annotations —
+reads are readOnlyHint, deletes are destructiveHint; `TRACKER_READ_ONLY=1` serves reads only.
+`bulkchange/_get` does NOT exist (404 verified) — entities bulk-read is not an API feature.
+
 ## Pitfalls (verified against the live API)
 
 - **Entities**: `get_entity`/`search_entities` return NO `fields` unless you pass the

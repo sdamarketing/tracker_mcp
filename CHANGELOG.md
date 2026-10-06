@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.5] — 2026-10-05
+
+### Added (benchmarked against bim-ba/ycli coverage matrix)
+- `get_link_types` — каталог типов связей (недокументированный GET /v3/linktypes, проверен вживую)
+- `download_entity_attachment` — скачивание вложений проектов/портфелей/целей
+- **MCP tool annotations**: readOnlyHint для всех чтений, destructiveHint для delete_*
+- **TRACKER_READ_ONLY=1** — сервер регистрирует только 80 read-only инструментов
+
+### Проверено и отвергнуто
+- `POST /entities/{type}/bulkchange/_get` — не существует (404), в API нет bulk-чтения сущностей
+
+
 ## [1.0.4] — 2026-10-05
 
 ### Fixed (found during a live full-API walkthrough)

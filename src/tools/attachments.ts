@@ -177,6 +177,38 @@ export function registerAttachmentTools(server: McpServer, client: TrackerClient
     },
   );
 
+
+  server.registerTool(
+    'download_entity_attachment',
+    {
+      description:
+        'Download an attachment of a project/portfolio/goal. Content path for entities is ' +
+        '/attachments/{id}/{filename} (not issue-scoped). Images come back as image content.',
+      inputSchema: z.object({
+        attachmentId: z
+          .string()
+          .or(z.number())
+          .describe('Attachment id (from list_entity_attachments)'),
+        filename: z.string().optional().describe('Stored file name (auto-resolved if omitted)'),
+      }),
+    },
+    async (args) => {
+      try {
+        const info = await client.get<{ name?: string }>(
+          `/attachments/${encodeURIComponent(String(args.attachmentId))}`,
+        ).catch(() => ({ name: undefined }));
+        const filename = args.filename ?? info.name ?? 'file';
+        const { buffer, contentType } = await client.download(
+          `/attachments/${encodeURIComponent(String(args.attachmentId))}/${encodeURIComponent(filename)}`,
+        );
+        return binaryToolResult(buffer, contentType);
+      } catch (cause) {
+        const message = cause instanceof Error ? cause.message : String(cause);
+        return textResult(message);
+      }
+    },
+  );
+
   server.registerTool(
     'upload_temp_attachment',
     {

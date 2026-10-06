@@ -180,6 +180,16 @@ await test('API errors surface as isError with readable message', async () => {
   assert(r.content?.[0]?.text, 'has text');
 });
 
+
+await test('annotations: reads have readOnlyHint, deletes are destructive', async () => {
+  const r = await call('tools/list', {});
+  const tools = r.result.tools;
+  const byName = Object.fromEntries(tools.map((t) => [t.name, t]));
+  assert.equal(byName.get_priorities.annotations?.readOnlyHint, true);
+  assert.equal(byName.delete_filter.annotations?.destructiveHint, true);
+  assert.equal(byName.create_issue.annotations?.readOnlyHint, false);
+});
+
 child.kill();
 stub.close();
 

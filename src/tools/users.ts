@@ -108,6 +108,18 @@ export function registerAdminTools(server: McpServer, client: TrackerClient): vo
     async () => runTool(async () => cached('catalog:fields', () => client.get('/fields'))),
   );
 
+
+  server.registerTool(
+    'get_link_types',
+    {
+      description:
+        'List issue link types (relates, depends, subtask, duplicates, epic, clone) with ' +
+        'their inward/outward names. Undocumented but live endpoint GET /v3/linktypes.',
+      inputSchema: z.object({}),
+    },
+    async () => runTool(async () => cached('catalog:linktypes', () => client.get('/linktypes'))),
+  );
+
   const localized = z.record(z.string(), z.string()).describe('{"ru": "…", "en": "…"}');
 
   server.registerTool(
