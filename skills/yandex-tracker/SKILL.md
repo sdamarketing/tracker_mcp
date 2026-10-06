@@ -358,6 +358,8 @@ reads are readOnlyHint, deletes are destructiveHint; `TRACKER_READ_ONLY=1` serve
   between projects/portfolios and goals (see field-catalogs.md). `on_track` / `onTrack` → 422.
 - **Entities**: `update_entity`'s `comment` param returns 200 but does NOT post to the
   «Обновления» feed — use `add_entity_comment` for status updates.
+- **Entities**: `issueQueues` is READ-ONLY via the API (422 «Поля только для чтения») —
+  linking a queue to a project happens in the web UI (queue settings), not via API.
 - `create_entity_link` takes a `links` ARRAY (one call can add several), not flat
   relationship/entity params. `get_entity_links` rows come as `{type, linkFieldValues}` —
   pass `fields` for readable names.
