@@ -319,6 +319,32 @@ create_entity(project, fields={summary via arg only — see schema; description,
 → Audit trail: get_entity_events(newEventsOnTop:true) — status diffs, file/link/comment events
 ```
 
+- **Queues**: key = latin letters only (digits rejected: `WALK2` → 422). `issueTypesConfig`
+  (types + workflow + resolutions) is settable ONLY at create_queue — there is no
+  update-queue endpoint; a wrong config means recreating the queue. Workflow must exist
+  (get_workflows) — bad id → 422 «воркфлоу не существует». Queue types not listed in the
+  queue config reject issues: `type epic` → 422 «нет типа задач».
+- **Local queue fields**: address them by the COMPOUND id from get_queue_local_fields
+  (`{queueNumericId}--{fieldKey}`), the short key → 400 «Field was not found».
+- **move_issue**: a nonexistent target queue comes back as a misleading 500 — check the
+  queue exists first. Moves re-key the issue (old key stays an alias).
+- **Boards**: `sprintsAvailable` only works when the queue has a backlog enabled in UI
+  settings (no API switch) — else 422. Board/sprint writes need If-Match = current
+  `version` (the tools quote it as an ETag).
+- **Workflows**: `initialAction.target` and step `actions[].target` are status KEYS;
+  actions describe transitions FROM their step; every status must be reachable from
+  `initialAction` (else 422 "недостижим"); `statusType` is visual-editor-only.
+- **Macros**: `issueUpdate` takes field VALUES (`{"assignee": "me", "priority": "critical"}`),
+  NOT transition ids (`status: "start_progress"` → 422).
+- **Worklog**: edit/delete need BOTH issueId and worklogId (path is
+  `/issues/{issue}/worklog/{id}`). Duration `P5D` displays as `P1W` (8h workdays).
+- **Triggers**: get_queue_trigger_logs only logs Webhook actions; CreateComment etc are
+  visible on the issue itself.
+- **find_worklog_records**: params are `createdFrom` / `createdTo`, not a createdAt object.
+- **find_issue_reports**: pass `fields` in the filter body options to get summaries back.
+- Comments: `type: "standard"` is the default; reactions list: LIKE, DISLIKE, LAUGH,
+  HOORAY, CONFUSED, HEART, ROCKET, EYES, FIRE, OK, FACEPALM, CHECK.
+
 ## Pitfalls (verified against the live API)
 
 - **Entities**: `get_entity`/`search_entities` return NO `fields` unless you pass the

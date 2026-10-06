@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.4] — 2026-10-05
+
+### Fixed (found during a live full-API walkthrough)
+- `edit_worklog_record` / `delete_worklog_record`: path was `/worklog/{id}` → correct `/issues/{issueId}/worklog/{id}` (both take `issueId` now)
+- Board/sprint writes: `If-Match` is now sent as a quoted ETag (`"3"`) — plain values got 400
+- `update_entity`: passes through `comment` and `links`
+
+### Skill
+- Полный проход по UI-вкладкам Трекера: задачи, очереди (локальные поля, компоненты, триггеры, автодействия, макросы), воркфлоу, доски/спринты, отчёты, отпуска, импорт
+- Новая «рецептурная» про проекты + 12 грабель, проверенных на реальной организации (429-рейтинг, compound-id локальных полей, immutable issueTypesConfig, правила воркфлоу и пр.)
+
+
 ## [1.0.0] — 2026-10-04
 
 ### Highlights
@@ -15,6 +27,12 @@
 - CI: GitHub Actions (build, typecheck, smoke, e2e, docs drift) на Node 20/22/24
 - `npm run update` — самообновление установленной копии
 - Публикация в npm как `tracker-mcp`
+
+## [1.0.2]
+
+- CLI-обёртка `bin/tracker-mcp.mjs`: подкоманды `setup`, `update`, `links`, `--help`, `--version`
+- Понятная ошибка при отсутствии env: указывает на `tracker-mcp setup`
+
 
 ## [0.1.0] — первичная версия
 

@@ -45,6 +45,7 @@ export function registerWorklogTools(server: McpServer, client: TrackerClient): 
     {
       description: 'Edit a time tracking record (worklog).',
       inputSchema: z.object({
+        issueId: z.string().describe('Issue key or id'),
         worklogId: z.string().describe('Worklog record id (from get_issue_worklog)'),
         duration: z.string().optional().describe('New duration in ISO 8601 format, e.g. "PT2H"'),
         comment: z.string().optional().describe('New comment'),
@@ -52,8 +53,11 @@ export function registerWorklogTools(server: McpServer, client: TrackerClient): 
     },
     async (args) =>
       runTool(async () => {
-        const { worklogId, ...body } = args;
-        return client.patch(`/worklog/${encodeURIComponent(worklogId)}`, body);
+        const { issueId, worklogId, ...body } = args;
+        return client.patch(
+          `/issues/${encodeURIComponent(issueId)}/worklog/${encodeURIComponent(worklogId)}`,
+          body,
+        );
       }),
   );
 
@@ -89,10 +93,15 @@ export function registerWorklogTools(server: McpServer, client: TrackerClient): 
       description: 'Delete a time tracking record (worklog).',
       inputSchema: z.object({
         confirm: z.boolean().optional().describe('Set to true to confirm this destructive/bulk operation'),
+        issueId: z.string().describe('Issue key or id'),
         worklogId: z.string().describe('Worklog record id (from get_issue_worklog)'),
       }),
     },
     async (args) =>
-      dangerTool(args, async () => client.delete(`/worklog/${encodeURIComponent(args.worklogId)}`)),
+      dangerTool(args, async () =>
+        client.delete(
+          `/issues/${encodeURIComponent(args.issueId)}/worklog/${encodeURIComponent(args.worklogId)}`,
+        ),
+      ),
   );
 }

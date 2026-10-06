@@ -90,7 +90,7 @@ export class TrackerClient {
       headers['Accept-Language'] = this.config.lang;
     }
     if (options.ifMatch !== undefined) {
-      headers['If-Match'] = String(options.ifMatch);
+      headers['If-Match'] = String(options.ifMatch).match(/^".*"$/) ? String(options.ifMatch) : `"${options.ifMatch}"`;
     }
 
     let body: BodyInit | undefined;
