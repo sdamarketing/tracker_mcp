@@ -126,12 +126,23 @@ export function registerEntityTools(server: McpServer, client: TrackerClient): v
             '"parentEntity": {"primary": "portfolio-id", "secondary": []}} or with ' +
             'set/add commands like {"teamUsers": {"add": ["user2"]}}',
           ),
+        comment: z
+          .string()
+          .optional()
+          .describe('Comment to post together with the update (a "project status update")'),
+        links: z
+          .array(z.object({ relationship: z.string(), entity: z.string() }))
+          .optional()
+          .describe('Entity links to add together with the update'),
       }),
     },
     async (args) =>
       runTool(async () => {
-        const { entityType, entityId, fields } = args;
-        return client.patch(entityPath(entityType, entityId), { fields });
+        const { entityType, entityId, fields, comment, links } = args;
+        const body: Record<string, unknown> = { fields };
+        if (comment) body.comment = comment;
+        if (links) body.links = links;
+        return client.patch(entityPath(entityType, entityId), body);
       }),
   );
 

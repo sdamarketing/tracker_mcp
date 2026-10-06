@@ -299,7 +299,39 @@ create_gaps { gaps: [ { user: 'user1', workflow: 'vacation', from: '2026-11-01T0
 find_gaps { users: ['user1'], from: '…', to: '…' }
 ```
 
+
+### Projects tab walkthrough (all project features)
+
+```text
+create_entity(project, fields={summary via arg only — see schema; description, markupType:'md',
+  entityStatus:'in_progress', lead, teamUsers[], clients[], followers[], tags[],
+  start:'YYYY-MM-DD', end:'YYYY-MM-DD', quarter:['2026 Q4'],
+  parentEntity:{primary:'<portfolio-id>', secondary:[]}})
+→ get_entity(fields:'summary,entityStatus,lead,clients,...')  # bare get returns NO fields!
+→ upload_temp_attachment(file) → add_entity_attachment(tempFileId)  # files on the project
+→ add_entity_checklist_items([{text, assignee, deadline:{date, deadlineType:'date'}}])
+  / update_entity_checklist_item / move / delete (мilestones are NOT in the API — use the checklist)
+→ create_entity(goal, keyResultItems:[{type:'value', text, progress:{start,end,current}}])
+→ create_entity_link(project, links:[{relationship:'works towards', entity:'<goal-id>'}])
+  # get back readable rows: get_entity_links(fields:'summary,entityStatus')
+→ Project status update (лента «Обновления»): add_entity_comment({text}) — this is what
+  shows in the feed; combine with update_entity(fields:{entityStatus:'at_risk'}) to move health
+→ Audit trail: get_entity_events(newEventsOnTop:true) — status diffs, file/link/comment events
+```
+
 ## Pitfalls (verified against the live API)
+
+- **Entities**: `get_entity`/`search_entities` return NO `fields` unless you pass the
+  `fields` param explicitly (e.g. `fields:'summary,entityStatus,lead'`).
+- **Entities**: there is NO `status` field — only `entityStatus`, and value lists differ
+  between projects/portfolios and goals (see field-catalogs.md). `on_track` / `onTrack` → 422.
+- **Entities**: `update_entity`'s `comment` param returns 200 but does NOT post to the
+  «Обновления» feed — use `add_entity_comment` for status updates.
+- `create_entity_link` takes a `links` ARRAY (one call can add several), not flat
+  relationship/entity params. `get_entity_links` rows come as `{type, linkFieldValues}` —
+  pass `fields` for readable names.
+- 429 = rate limit (common with back-to-back entity writes) — wait 5–10s and retry, don't hammer.
+
 
 - `create_queue_version` — the date field is **`dueDate`**, not `releaseDate`.
 - Closing transitions without a resolution → 400. Add `resolution` to

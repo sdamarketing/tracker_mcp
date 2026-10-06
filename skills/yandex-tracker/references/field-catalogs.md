@@ -111,3 +111,44 @@ Entity permissions (`update_entity_permissions`): grant/revoke per `READ` |
 Category ids come from `get_issue_fields` (each field shows its `category`) —
 pass the category id string to `create_issue_field` /
 `create_issue_field_category` creates new ones.
+
+## Entity fields (projects / portfolios / goals) — verified live
+
+| field | type | who has it | notes |
+|---|---|---|---|
+| `summary` | string | all | required on create |
+| `description` | string | all | YFM when `markupType: "md"` |
+| `markupType` | `"md"` | all | set it, or YFM shows as raw text |
+| `entityStatus` | string | all | SEE TABLES BELOW — values differ per type |
+| `author` / `lead` | user | all | login or numeric id |
+| `teamUsers` / `clients` / `followers` | user[] | all | участники / заказчики / наблюдатели |
+| `start`, `end` | `YYYY-MM-DD` | start: proj/portf only; end: all | plain dates |
+| `quarter` | `["YYYY QN"]` | proj/portf | e.g. `"2026 Q4"` |
+| `tags` | string[] | all | |
+| `parentEntity` | `{primary, secondary[]}` | all | «Входит в портфель» / parent goal |
+| `teamAccess` | bool | all | true = only participants |
+| `metricItems` | `[{text, url}]` | all | dashboard widgets |
+| `checklistItems` | objects | proj/portf | projects & portfolios only |
+| `keyResultItems` | objects | goals only | `{type: "value"|"binary", text, progress:{start,end,current}}` |
+| read-only: `issueQueues`, `linkedGoalsCount`, `linkedProjectsCount`, `progressPercentage` (goals), `lastCommentUpdatedAt` | | | computed by API |
+
+**NOT available via API:** приоритет сущности (no `priority` field), вехи/milestones
+(`Field [milestones] was not found` — UI-only, not in the entities API). Use the
+checklist as milestone stand-ins.
+
+### entityStatus — projects & portfolios (from the docs include)
+
+`draft` Новый · `draft2` Черновик · `in_progress` В работе · `according_to_plan` По плану ·
+`postponed` Отложен · `at_risk` Есть риски · `blocked` Заблокирован ·
+`launched` Завершен · `cancelled` Отменен
+
+### entityStatus — goals (different list!)
+
+`draft` Новая · `according_to_plan` По плану · `at_risk` Есть риски · `blocked` Заблокирована ·
+`achieved` Достигнута · `partially_achieved` Частично достигнута · `not_achieved` Не достигнута ·
+`exceeded` Превышена · `cancelled` Отменена
+
+### Entity link relationships
+
+Projects/portfolios: `depends on`, `is dependent by`, `works towards` (→ goal).
+Goals: `parent entity`, `child entity`, `depends on`, `is dependent by`, `is supported by` (← project).

@@ -1,6 +1,6 @@
 {
   "name": "tracker-mcp",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "MCP server for Yandex Tracker API v3 — full coverage (185 tools): issues, queues, boards, sprints, projects, goals, bulk ops, admin catalogs",
   "type": "module",
   "main": "dist/index.js",
