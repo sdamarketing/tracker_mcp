@@ -1,0 +1,31 @@
+---
+title: tracker-mcp — MCP-сервер для Яндекс Трекера
+description: Полное покрытие API Трекера v3 (187 инструментов) для AI-ассистентов
+---
+
+**tracker-mcp** учит вашего AI-ассистента работать с Яндекс Трекером: искать и
+создавать задачи, вести спринты и доски, управлять проектами, портфелями и целями,
+работать с чеклистами, вложениями, трудозатратами и администрированием.
+
+<CardGroup cols={2}>
+  <Card title="Быстрый старт" icon="rocket" href="/quickstart.ru">
+    Установка за 5 минут: curl | bash или npm
+  </Card>
+  <Card title="Безопасность" icon="shield" href="/security.ru">
+    Аннотации readOnly/destructive, confirm-гард, read-only режим
+  </Card>
+</CardGroup>
+
+## Возможности
+
+- **187 инструментов** — полное покрытие публичного API Трекера v3
+- Инструменты помечены MCP-аннотациями: чтения — `readOnlyHint`, удаления — `destructiveHint`
+- Все деструктивные и массовые операции требуют `confirm: true`
+- Режим `TRACKER_READ_ONLY=1` отдаёт только чтение (80 инструментов)
+- Скилл для агентов с живыми рецептами и граблями API:
+  `npx skills add sdamarketing/tracker_mcp`
+
+## Исходный код
+
+GitHub: [sdamarketing/tracker_mcp](https://github.com/sdamarketing/tracker_mcp)
+npm: [tracker-mcp](https://www.npmjs.com/package/tracker-mcp)

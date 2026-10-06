@@ -7,3 +7,6 @@ install-links.html
 .agents/
 .claude/
 skills-lock.json
+
+# Внутреннее (не публикуется в GitHub)
+AGENTS.md

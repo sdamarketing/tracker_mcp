@@ -1,0 +1,44 @@
+---
+title: Быстрый старт
+description: Установка tracker-mcp за пять минут
+---
+
+## Вариант 1. Одна команда (macOS / Linux / WSL)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sdamarketing/tracker_mcp/main/install.sh | bash
+```
+
+Установщик проверит Node.js (при необходимости поставит через nvm), скачает и соберёт
+сервер в `~/.traker-mcp`, затем запустит интерактивный мастер: токен Трекера,
+ID организации, проверка ключей живым запросом, выбор AI-клиента стрелочным
+селектором и автоматическая запись конфига.
+
+Повторный запуск той же команды — обновление сервера.
+
+## Вариант 2. npm
+
+```bash
+npm install -g tracker-mcp
+tracker-mcp setup
+```
+
+## Ключи доступа
+
+Нужны две вещи:
+
+| Параметр | Где взять |
+|---|---|
+| `TRACKER_TOKEN` | OAuth-токен с правами `tracker:read` и `tracker:write` — [oauth.yandex.ru](https://oauth.yandex.ru/client/new) |
+| `TRACKER_ORG_ID` | [tracker.yandex.ru/admin/orgs](https://tracker.yandex.ru/admin/orgs) → идентификатор организации |
+
+Для организаций Yandex Cloud/Identity Hub: `TRACKER_AUTH=iam` и IAM-токен.
+
+## Проверка
+
+Спросите ассистента: «Покажи мои открытые задачи». Должна прийти ваша лента.
+
+## Подробности
+
+Полное руководство со скрин-уровнем деталей и разбором ошибок:
+[SETUP.md](https://github.com/sdamarketing/tracker_mcp/blob/main/docs/SETUP.md).

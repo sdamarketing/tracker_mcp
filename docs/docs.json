@@ -1,0 +1,27 @@
+{
+  "$schema": "https://context7.com/schema/docs7.json",
+  "name": "tracker-mcp",
+  "colors": {
+    "primary": "#5B57F1"
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "Руководство",
+        "pages": [
+          "index.ru",
+          "quickstart.ru",
+          "security.ru"
+        ]
+      },
+      {
+        "group": "Guide",
+        "pages": [
+          "index.en",
+          "quickstart.en",
+          "security.en"
+        ]
+      }
+    ]
+  }
+}

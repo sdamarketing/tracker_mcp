@@ -1,0 +1,31 @@
+---
+title: tracker-mcp — MCP server for Yandex Tracker
+description: Full Yandex Tracker API v3 coverage (187 tools) for AI assistants
+---
+
+**tracker-mcp** teaches your AI assistant to work with Yandex Tracker: search and
+create issues, run sprints and boards, manage projects, portfolios and goals,
+work with checklists, attachments, worklogs and admin catalogs.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart.en">
+    Five-minute install: curl | bash or npm
+  </Card>
+  <Card title="Security" icon="shield" href="/security.en">
+    readOnly/destructive annotations, confirm guard, read-only mode
+  </Card>
+</CardGroup>
+
+## Features
+
+- **187 tools** — complete coverage of the public Tracker v3 API
+- MCP tool annotations: reads carry `readOnlyHint`, deletes carry `destructiveHint`
+- Every destructive/bulk operation requires `confirm: true`
+- `TRACKER_READ_ONLY=1` serves read tools only (80 tools)
+- An agent skill with live-tested recipes and API pitfalls:
+  `npx skills add sdamarketing/tracker_mcp`
+
+## Source
+
+GitHub: [sdamarketing/tracker_mcp](https://github.com/sdamarketing/tracker_mcp)
+npm: [tracker-mcp](https://www.npmjs.com/package/tracker-mcp)

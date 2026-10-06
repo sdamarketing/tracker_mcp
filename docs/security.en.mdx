@@ -1,0 +1,35 @@
+---
+title: Security
+description: How tracker-mcp protects your data and credentials
+---
+
+## Your token goes nowhere
+
+The server talks only to `api.tracker.yandex.net`. The token lives in your client
+config or a local `.env` (git-ignored).
+
+## Tool annotations
+
+Every tool carries MCP annotations:
+
+- `readOnlyHint: true` — 80 read tools
+- `destructiveHint: true` — all `delete_*`
+- Clients use these to surface risky actions separately
+
+## Confirm guard
+
+All `delete_*` and `bulk_*` tools (29 total) refuse to run without `confirm: true`.
+The agent must show you exactly what will be deleted or bulk-changed first.
+
+## Read-only mode
+
+```bash
+TRACKER_READ_ONLY=1
+```
+
+The server registers only the 80 read tools — writes are physically impossible.
+Ideal for third-party agents and demos.
+
+## Secret scanning
+
+CI runs gitleaks on every push.

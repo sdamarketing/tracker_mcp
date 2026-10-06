@@ -1,0 +1,44 @@
+---
+title: Quickstart
+description: Install tracker-mcp in five minutes
+---
+
+## Option 1. One command (macOS / Linux / WSL)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sdamarketing/tracker_mcp/main/install.sh | bash
+```
+
+The installer checks Node.js (installs via nvm if missing), downloads and builds the
+server into `~/.traker-mcp`, then launches an interactive wizard: Tracker token,
+organization id, a live credentials check, an arrow-key AI-client picker, and
+automatic config writing.
+
+Re-running the same command updates the server.
+
+## Option 2. npm
+
+```bash
+npm install -g tracker-mcp
+tracker-mcp setup
+```
+
+## Credentials
+
+You need two values:
+
+| Variable | Where to get it |
+|---|---|
+| `TRACKER_TOKEN` | OAuth token with `tracker:read` + `tracker:write` scopes — [oauth.yandex.ru](https://oauth.yandex.ru/client/new) |
+| `TRACKER_ORG_ID` | [tracker.yandex.ru/admin/orgs](https://tracker.yandex.ru/admin/orgs) → organization id |
+
+For Yandex Cloud / Identity Hub organizations: `TRACKER_AUTH=iam` plus an IAM token.
+
+## Verify
+
+Ask your assistant: "Show my open issues." Your Tracker feed should come back.
+
+## Details
+
+Full guide with per-client instructions and troubleshooting:
+[SETUP.md](https://github.com/sdamarketing/tracker_mcp/blob/main/docs/SETUP.md).
