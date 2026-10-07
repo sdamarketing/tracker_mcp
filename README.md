@@ -169,6 +169,25 @@ npm run setup
 | `TRACKER_AUTH` | нет | `oauth` (по умолчанию) или `iam` — определяет заголовки `X-Org-ID` / `X-Cloud-Org-ID` |
 | `TRACKER_API_URL` | нет | По умолчанию `https://api.tracker.yandex.net/v3` |
 | `TRACKER_LANG` | нет | `ru` или `en` — язык локализованных полей |
+| `TRACKER_READ_ONLY` | нет | `1` — агенту видны только read-only инструменты (80 шт) |
+| `TRACKER_CACHE_TTL_MS` | нет | TTL кэша справочников (по умолчанию 10 минут) |
+
+### HTTP-режим (`serve`)
+
+По умолчанию сервер работает по stdio (для локальных агентов). Для сетевого
+доступа (команда, удалённый клиент, проксирование):
+
+```bash
+tracker-mcp serve --port 3407 --host 127.0.0.1   # значения по умолчанию
+MCP_AUTH_TOKEN=s3cret tracker-mcp serve            # ключ к эндпоинту (Bearer)
+curl localhost:3407/health                         # {"ok":true,"tools":187}
+```
+
+- Эндпоинт MCP: `POST/GET/DELETE /mcp` (Streamable HTTP, stateless)
+- Без `MCP_AUTH_TOKEN` привязка к не-loopback-адресу отклоняется — токен
+  Трекера живёт в env, голый порт в сети недопустим
+- Конфиг клиента для HTTP: `"url": "http://127.0.0.1:3407/mcp"` +
+  `"headers": {"Authorization": "Bearer s3cret"}`
 
 ## Безопасность
 

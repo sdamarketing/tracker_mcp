@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.6] — 2026-10-07
+
+### Added (YTMCP-1)
+- **`tracker-mcp serve --port 3407`** — HTTP-транспорт (Streamable HTTP, stateless,
+  эндпоинт `/mcp` + `/health`). Креды Трекера из env процесса; доступ к эндпоинту
+  закрывается `MCP_AUTH_TOKEN` (Bearer). Без токена — только loopback-хост.
+- Шаблон сервера вынесен в `src/server.ts` (общий для stdio и HTTP входов),
+  исправлен баланс скобок в `src/index.ts` (был лишний `}`).
+
 ## [1.0.5] — 2026-10-05
 
 ### Added (benchmarked against bim-ba/ycli coverage matrix)

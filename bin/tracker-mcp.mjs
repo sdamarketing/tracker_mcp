@@ -25,6 +25,9 @@ if (cmd === '--help' || cmd === '-h' || cmd === 'help') {
 
 Использование:
   tracker-mcp            запустить MCP-сервер (stdio, нужен TRACKER_TOKEN/TRACKER_ORG_ID)
+  tracker-mcp serve      HTTP-сервер: --port 3407 (по умолчанию), --host 127.0.0.1,
+                         ключ доступа к эндпоинту: env MCP_AUTH_TOKEN (Bearer),
+                         без него разрешён только loopback
   tracker-mcp setup      интерактивный мастер: ключи Трекера + настройка AI-клиента
   tracker-mcp update     обновить установленную копию (git-клон) и скилл
   tracker-mcp links      сгенерировать install-links.html с кнопками «в один клик»
@@ -39,6 +42,7 @@ const targets = {
   setup: path.join(root, 'scripts', 'setup.mjs'),
   update: path.join(root, 'scripts', 'self-update.mjs'),
   links: path.join(root, 'scripts', 'generate-install-links.mjs'),
+  serve: path.join(root, 'dist', 'serve.js'),
 };
 
 const script = cmd ? targets[cmd] : path.join(root, 'dist', 'index.js');

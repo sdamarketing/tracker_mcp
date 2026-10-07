@@ -190,11 +190,68 @@ await test('annotations: reads have readOnlyHint, deletes are destructive', asyn
   assert.equal(byName.create_issue.annotations?.readOnlyHint, false);
 });
 
+await test('serve: HTTP transport — health, auth gate, SSE initialize', async () => {
+  const port = 34099;
+  const srv = spawn(process.execPath, [path.join(root, 'dist', 'serve.js'), '--port', String(port)], {
+    env: { ...process.env, TRACKER_TOKEN: 't', TRACKER_ORG_ID: '1', MCP_AUTH_TOKEN: 'sekret' },
+    stdio: 'ignore',
+  });
+  try {
+    let up = false;
+    for (let i = 0; i < 50; i++) {
+      try {
+        const r = await fetch(`http://127.0.0.1:${port}/health`);
+        if (r.ok) {
+          up = true;
+          break;
+        }
+      } catch {
+        /* server not up yet */
+      }
+      await new Promise((r2) => setTimeout(r2, 100));
+    }
+    assert(up, 'serve /health responds');
+
+    const initBody = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-06-18',
+        capabilities: {},
+        clientInfo: { name: 't', version: '0' },
+      },
+    });
+    const post = (headers = {}) =>
+      fetch(`http://127.0.0.1:${port}/mcp`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          accept: 'application/json, text/event-stream',
+          ...headers,
+        },
+        body: initBody,
+      });
+
+    assert.equal((await post()).status, 401, 'no token → 401');
+    const r = await post({ authorization: 'Bearer sekret' });
+    assert.equal(r.status, 200, 'with token → 200');
+    const text = await r.text();
+    assert(text.includes('"protocolVersion":"2025-06-18"'), 'initialize answered (SSE)');
+    assert(text.includes('"name":"yandex-tracker"'), 'serverInfo is yandex-tracker');
+
+    assert.equal((await fetch(`http://127.0.0.1:${port}/nope`)).status, 404, 'unknown path → 404');
+  } finally {
+    srv.kill();
+    await new Promise((r2) => setTimeout(r2, 200));
+  }
+});
+
 child.kill();
 stub.close();
 
 if (failures.length) {
-  console.error(`\nFAILED: ${failures.length}/${failures.length + 8}:`, failures.join(', '));
+  console.error(`\nFAILED: ${failures.length}/${failures.length + 10}:`, failures.join(', '));
   process.exit(1);
 }
 console.log('\ne2e: all tests passed (stub API, no real token used)');
