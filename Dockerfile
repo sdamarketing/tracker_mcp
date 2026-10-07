@@ -18,6 +18,11 @@ FROM node:22-alpine
 ENV NODE_ENV=production
 WORKDIR /app
 
+# Ownership-метки для Official MCP Registry (io.modelcontextprotocol.server.name)
+# и привязки пакета к репо на ghcr (org.opencontainers.image.source)
+LABEL io.modelcontextprotocol.server.name="io.github.sdamarketing/tracker-mcp" \
+      org.opencontainers.image.source="https://github.com/sdamarketing/tracker_mcp"
+
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --no-fund --no-audit && npm cache clean --force
 

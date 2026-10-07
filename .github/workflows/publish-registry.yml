@@ -1,0 +1,74 @@
+name: mcp-registry
+
+# Official MCP Registry: publish server.json on release tags.
+# Требует, чтобы npm-пакет той же версии УЖЕ был опубликован вручную
+# (npm publish требует 2FA) — ждёт его появления до 10 минут.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Версия для публикации (например 1.0.7)'
+        required: true
+
+permissions:
+  contents: read
+  id-token: write # GitHub OIDC для mcp-publisher
+
+env:
+  MCP_PUBLISHER_VERSION: v1.8.1
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: v
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for npm package (published manually, 2FA)
+        run: |
+          for i in $(seq 1 30); do
+            if npm view "tracker-mcp@${{ steps.v.outputs.version }}" version >/dev/null 2>&1; then
+              echo "npm: tracker-mcp@${{ steps.v.outputs.version }} найден"; exit 0
+            fi
+            echo "npm: жду публикации tracker-mcp@${{ steps.v.outputs.version }} ($i/30)"; sleep 20
+          done
+          echo "::error::npm-пакет tracker-mcp@${{ steps.v.outputs.version }} не опубликован. Сначала: npm publish --access public"; exit 1
+
+      - name: Wait for ghcr image (docker workflow)
+        run: |
+          for i in $(seq 1 30); do
+            if docker manifest inspect "ghcr.io/sdamarketing/tracker-mcp:${{ steps.v.outputs.version }}" >/dev/null 2>&1; then
+              echo "ghcr: образ найден"; exit 0
+            fi
+            echo "ghcr: жду образ ($i/30)"; sleep 20
+          done
+          echo "::error::Obраз ghcr.io/sdamarketing/tracker-mcp:${{ steps.v.outputs.version }} не найден (docker workflow не завершился?)"; exit 1
+
+      - name: Install mcp-publisher
+        run: |
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz" \
+            | tar -xz mcp-publisher
+          sudo install mcp-publisher /usr/local/bin/mcp-publisher
+
+      - name: Fill version into server.json
+        run: sed -i "s/0\.0\.0-CI/${{ steps.v.outputs.version }}/g" server.json
+
+      - name: Validate server.json
+        run: mcp-publisher validate server.json
+
+      - name: Login (GitHub OIDC)
+        run: mcp-publisher login github-oidc
+
+      - name: Publish to the Official MCP Registry
+        run: mcp-publisher publish server.json

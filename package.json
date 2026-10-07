@@ -54,5 +54,6 @@
     "docs",
     "README.md",
     "LICENSE"
-  ]
+  ],
+  "mcpName": "io.github.sdamarketing/tracker-mcp"
 }

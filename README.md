@@ -91,6 +91,12 @@ tracker-mcp setup     # интерактивный мастер: ключи Тр
 прописывайте). Другие команды: `tracker-mcp update`, `tracker-mcp links`,
 `tracker-mcp --help`.
 
+## Official MCP Registry
+
+Сервер опубликован в официальном реестре MCP как
+`io.github.sdamarketing/tracker-mcp` (npm + Docker-пакеты, env-переменные описаны
+в `server.json`). Клиенты с поддержкой реестра найдут его по имени.
+
 ## Docker (без установки чего-либо, кроме Docker)
 
 Образ публикуется в GitHub Container Registry при каждом релизе (`v*-тег`):

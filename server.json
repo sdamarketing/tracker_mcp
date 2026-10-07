@@ -1,0 +1,75 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.sdamarketing/tracker-mcp",
+  "title": "Yandex Tracker",
+  "description": "MCP server for Yandex Tracker: full API v3 coverage (187 tools)",
+  "repository": {
+    "url": "https://github.com/sdamarketing/tracker_mcp",
+    "source": "github"
+  },
+  "version": "0.0.0-CI",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "tracker-mcp",
+      "version": "0.0.0-CI",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "TRACKER_TOKEN",
+          "description": "OAuth-токен Яндекс 360 (y0_...) или IAM-токен Yandex Cloud (t1....)",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "TRACKER_ORG_ID",
+          "description": "ID организации (Яндекс 360 или Yandex Cloud)",
+          "isRequired": true
+        },
+        {
+          "name": "TRACKER_AUTH",
+          "description": "Схема авторизации: oauth (Яндекс 360) или iam (Yandex Cloud)",
+          "default": "oauth",
+          "choices": ["oauth", "iam"]
+        }
+      ]
+    },
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/sdamarketing/tracker-mcp:0.0.0-CI",
+      "transport": {
+        "type": "stdio"
+      },
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "name": "-e",
+          "value": "TRACKER_TOKEN={tracker_token}",
+          "description": "Токен Трекера",
+          "variables": {
+            "tracker_token": {
+              "description": "OAuth-токен Яндекс 360 (y0_...) или IAM-токен Yandex Cloud (t1....)",
+              "isRequired": true,
+              "isSecret": true
+            }
+          }
+        },
+        {
+          "type": "named",
+          "name": "-e",
+          "value": "TRACKER_ORG_ID={tracker_org_id}",
+          "description": "ID организации",
+          "variables": {
+            "tracker_org_id": {
+              "description": "ID организации (Яндекс 360 или Yandex Cloud)",
+              "isRequired": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

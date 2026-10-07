@@ -2,6 +2,16 @@
 
 ## [1.0.7] — 2026-10-07
 
+### Added (YTMCP-3)
+- **`server.json` + workflow `publish-registry.yml`**: публикация в Official MCP
+  Registry (`io.github.sdamarketing/tracker-mcp`) по тегу `v*` через GitHub OIDC.
+  Порядок релиза: `npm publish` (вручную, 2FA) → `git tag vX.Y.Z && git push --tags`
+  → docker и registry workflows добивают сами (каждый ждёт свои артефакты).
+- `package.json`: добавлен `mcpName` (ownership-верификация npm-пакета в реестре).
+- `Dockerfile`: метки `io.modelcontextprotocol.server.name` и
+  `org.opencontainers.image.source` (ownership-верификация OCI-образа).
+- CI: валидация `server.json` (`mcp-publisher validate`) на каждый пуш.
+
 ### Added (YTMCP-2)
 - **Docker-образ**: multi-stage `node:22-alpine` (≈260 МБ), entrypoint — CLI-обёртка
   (stdio по умолчанию, `serve`/`setup`/`links` — аргументом). Сборка из исходников

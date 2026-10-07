@@ -32,6 +32,18 @@ jobs:
           node-version: 22
       - run: node scripts/check-docs-drift.mjs
 
+  server-json:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate server.json (Official MCP Registry schema)
+        run: |
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/download/v1.8.1/mcp-publisher_linux_amd64.tar.gz" \
+            | tar -xz mcp-publisher
+          # Плейсхолдер версии заменяем валидной (semver) — иначе schema-валидация упадёт на формате
+          sed -i 's/0\.0\.0-CI/0.0.0/g' server.json
+          ./mcp-publisher validate server.json
+
   secrets-scan:
     runs-on: ubuntu-latest
     steps:
