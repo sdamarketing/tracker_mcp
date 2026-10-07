@@ -91,6 +91,22 @@ tracker-mcp setup     # интерактивный мастер: ключи Тр
 прописывайте). Другие команды: `tracker-mcp update`, `tracker-mcp links`,
 `tracker-mcp --help`.
 
+## Docker (без установки чего-либо, кроме Docker)
+
+Образ публикуется в GitHub Container Registry при каждом релизе (`v*-тег`):
+
+```bash
+# stdio (MCP-клиент запускает контейнер сам)
+docker run -i --rm -e TRACKER_TOKEN -e TRACKER_ORG_ID ghcr.io/sdamarketing/tracker-mcp
+
+# HTTP-режим
+docker run --rm -p 3407:3407 -e TRACKER_TOKEN -e TRACKER_ORG_ID \
+  -e MCP_AUTH_TOKEN=вашключ ghcr.io/sdamarketing/tracker-mcp serve --host 0.0.0.0
+```
+
+В конфиге агента вместо `command: node` используется
+`command: docker, args: ["run","-i","--rm","-e","TRACKER_TOKEN","-e","TRACKER_ORG_ID","ghcr.io/sdamarketing/tracker-mcp"]`.
+
 ## Ручная установка (Windows или без curl)
 
 **Шаг 1.** Убедитесь, что есть Node.js 20+ (проверка: `node -v`).

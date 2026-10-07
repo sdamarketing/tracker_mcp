@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.7] — 2026-10-07
+
+### Added (YTMCP-2)
+- **Docker-образ**: multi-stage `node:22-alpine` (≈260 МБ), entrypoint — CLI-обёртка
+  (stdio по умолчанию, `serve`/`setup`/`links` — аргументом). Сборка из исходников
+  репозитория (не зависит от порядка публикации в npm).
+- **CI `docker.yml`**: по тегу `v*` собирает `linux/amd64+arm64` и пушит в
+  `ghcr.io/sdamarketing/tracker-mcp` (`{version}`, `{major}.{minor}`, `latest`);
+  `workflow_dispatch` — только проверка сборки, без пуша.
+
 ## [1.0.6] — 2026-10-07
 
 ### Added (YTMCP-1)

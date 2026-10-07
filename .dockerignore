@@ -1,0 +1,16 @@
+# Сборочное окружение образа (YTMCP-2)
+node_modules
+dist
+.git
+.gitignore
+.github
+docs
+skills
+tests
+graphify-out
+.env
+.env.*
+install-links.html
+*.log
+AGENTS.md
+CONTEXT.md
