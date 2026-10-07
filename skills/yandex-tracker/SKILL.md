@@ -13,7 +13,7 @@ user install the server first:
 curl -fsSL https://raw.githubusercontent.com/sdamarketing/tracker_mcp/main/install.sh | bash
 ```
 
-## Tool map (185 tools — full v3 API coverage)
+## Tool map (187 tools — full v3 API coverage)
 
 | Task | Tools |
 |---|---|
@@ -32,6 +32,18 @@ curl -fsSL https://raw.githubusercontent.com/sdamarketing/tracker_mcp/main/insta
 | Catalogs & users | reads + writes for issue types, statuses, resolutions, priorities; fields CRUD + categories; `get_users`, `get_users_relative`, `get_user`, `get_current_user` |
 | Absences (gaps) | `create_gaps`, `find_gaps`, `delete_gaps` |
 | Migration (import) | `import_issue`, `import_issue_comment`, `import_issue_link`, `import_worklog_record`, `import_issue_attachment` — admin-only, задним числом |
+
+## Beyond tools: resources and prompts
+
+The server also exposes MCP **resources** (`resources/read`, no tool call overhead):
+`tracker://issue/{KEY}` (card + last 20 comments as markdown), `tracker://queue/{KEY}`,
+`tracker://board/{ID}`, `tracker://catalog/{statuses|priorities|types|resolutions|linktypes}`
+(shares the 10-min tool cache), `tracker://myself`. Prefer a resource when you only need
+to READ one issue/queue/board into context.
+
+MCP **prompts** (`prompts/get`): `standup`, `weekly-report`, `triage`, `sprint-review`,
+`close-issue`, `create-issue` — ready-made instruction flows walking through the right
+tools in the right order. Offer them when the user's intent matches (`/standup`-style).
 
 ## Core rules
 

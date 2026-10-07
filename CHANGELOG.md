@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.1.0] — 2026-10-07 (unreleased)
+
+### Added (YTMCP-8)
+- **MCP Resources** (`resources/list` + `resources/read`): URI-схема `tracker://`
+  для чтения контекста без инструментов — `tracker://issue/{KEY}`,
+  `tracker://queue/{KEY}`, `tracker://board/{ID}` (с list-перечислением в
+  `resources/templates/list`), справочники `tracker://catalog/{statuses,
+  priorities, types, resolutions, linktypes}` (делят TTL-кэш с инструментами) и
+  `tracker://myself`. Отдача в markdown, пригодном для контекста агента; list-
+  колбэки устойчивы к ошибкам API.
+
+### Added (YTMCP-9)
+- **MCP Prompts** (`prompts/list` + `prompts/get`): шесть готовых сценариев с
+  аргументами — `standup`, `weekly-report`, `triage`, `sprint-review`,
+  `close-issue`, `create-issue`. Тексты ведут агента через конкретные
+  инструменты сервера (запросы, резолюции, confirm-гард).
+
+### Tests
+- e2e: 10 → 13 (resources list/read, prompts list/get).
+
+
 ## [1.0.8] — 2026-10-07
 
 ### Added (YTMCP-7)

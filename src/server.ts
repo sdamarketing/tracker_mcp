@@ -21,6 +21,8 @@ import { registerReportTools } from './tools/reports.js';
 import { registerWorkflowTools } from './tools/workflows.js';
 import { registerGapTools } from './tools/gaps.js';
 import { registerImportTools } from './tools/import.js';
+import { registerResources } from './resources.js';
+import { registerPrompts } from './prompts.js';
 
 export interface BuiltServer {
   server: McpServer;
@@ -87,6 +89,8 @@ export function buildServer(config?: TrackerConfig): BuiltServer {
   registerWorkflowTools(server, client);
   registerGapTools(server, client);
   registerImportTools(server, client);
+  registerResources(server, client);
+  registerPrompts(server);
 
   process.stderr.write(
     `yandex-tracker: ${registered} tools registered${readOnly ? ` (read-only mode, ${skipped} write tools hidden)` : ''}\n`,

@@ -181,6 +181,41 @@ await test('API errors surface as isError with readable message', async () => {
 });
 
 
+await test('resources: list exposes catalogs, templates expose issue/queue/board', async () => {
+  const list = await call('resources/list', {});
+  const uris = (list.result.resources ?? []).map((r) => r.uri);
+  assert(uris.includes('tracker://catalog/statuses'), 'has status catalog, got: ' + uris);
+  assert(uris.includes('tracker://myself'));
+  const tpl = await call('resources/templates/list', {});
+  const templates = (tpl.result.resourceTemplates ?? []).map((t) => t.uriTemplate);
+  assert(templates.includes('tracker://issue/{key}'));
+  assert(templates.includes('tracker://queue/{key}'));
+  assert(templates.includes('tracker://board/{id}'));
+});
+
+await test('resources/read: catalog renders markdown (shares tool catalog cache)', async () => {
+  requests.length = 0;
+  const r = await call('resources/read', { uri: 'tracker://catalog/priorities' });
+  const md = r.result.contents?.[0]?.text ?? '';
+  assert(md.includes('# Приоритеты задач'), md.slice(0, 120));
+  assert(md.includes('`normal`'), md.slice(0, 200));
+  // get_priorities уже закэшировал справочник в первом тесте — сети быть не должно
+  assert.equal(requests.length, 0, 'catalog read must come from cache');
+});
+
+await test('prompts: list has 6, standup returns messages with arguments', async () => {
+  const list = await call('prompts/list', {});
+  const names = (list.result.prompts ?? []).map((p) => p.name);
+  assert.deepEqual(
+    names.sort(),
+    ['close-issue', 'create-issue', 'sprint-review', 'standup', 'triage', 'weekly-report'],
+  );
+  const get = await call('prompts/get', { name: 'standup', arguments: { user: 'bob' } });
+  const text = get.result.messages?.[0]?.content?.text ?? '';
+  assert(text.includes('Assignee: bob'), text.slice(0, 200));
+  assert(text.includes('find_issues'));
+});
+
 await test('annotations: reads have readOnlyHint, deletes are destructive', async () => {
   const r = await call('tools/list', {});
   const tools = r.result.tools;
@@ -251,7 +286,7 @@ child.kill();
 stub.close();
 
 if (failures.length) {
-  console.error(`\nFAILED: ${failures.length}/${failures.length + 10}:`, failures.join(', '));
+  console.error(`\nFAILED: ${failures.length}/${failures.length + 13}:`, failures.join(', '));
   process.exit(1);
 }
 console.log('\ne2e: all tests passed (stub API, no real token used)');

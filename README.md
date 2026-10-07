@@ -15,6 +15,18 @@ Claude Code, opencode, Windsurf, Zed, JetBrains AI Assistant**.
 > 📘 Подробное руководство для новичков (получение токена, пошаговая настройка
 > каждого клиента, решение проблем) — в **[docs/SETUP.md](docs/SETUP.md)**.
 
+## Ресурсы и промпты (MCP)
+
+Помимо инструментов сервер отдаёт:
+
+- **Resources** (`resources/list`, `resources/read`) — tracker:// URI для чтения контекста без вызова инструментов:
+  - `tracker://issue/{KEY}` — карточка задачи с описанием и последними 20 комментариями (markdown);
+  - `tracker://queue/{KEY}` — очередь + обязательные поля создания задач;
+  - `tracker://board/{ID}` — доска с колонками и статусами;
+  - `tracker://catalog/statuses|priorities|types|resolutions|linktypes` — справочники (делят TTL-кэш с инструментами);
+  - `tracker://myself` — ваш профиль.
+- **Prompts** (`prompts/list`, `prompts/get`) — готовые сценарии с аргументами: `standup`, `weekly-report`, `triage`, `sprint-review`, `close-issue`, `create-issue`. В клиентах с поддержкой промптов вызываются как slash-команды.
+
 ## Что умеет
 
 187 инструментов — **полное покрытие** [API Трекера v3](https://yandex.ru/support/tracker/ru/api/about-api):
