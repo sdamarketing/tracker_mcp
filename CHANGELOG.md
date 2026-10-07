@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.7] — 2026-10-07
+## [1.0.8] — 2026-10-07
 
 ### Added (YTMCP-7)
 - **`publish-npm.yml`**: npm Trusted Publishing (OIDC) — ручной `npm publish` с
