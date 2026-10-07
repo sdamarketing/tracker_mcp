@@ -27,6 +27,15 @@
   `ghcr.io/sdamarketing/tracker-mcp` (`{version}`, `{major}.{minor}`, `latest`);
   `workflow_dispatch` — только проверка сборки, без пуша.
 
+## [1.0.9] — 2026-10-07
+
+### Added (YTMCP-5)
+- **Coverage generator**: `scripts/gen-coverage.mjs` + curated map (`tests/api-coverage-map.json`)
+  → `docs/COVERAGE.md` per-page table (docs URL × tool, status ✅/⚠️/📄).
+- `npm run docs:check` теперь = дрейф индекса + дрейф coverage-мапы (CI).
+- Найден бонус: `issues/get-links-paginate` и `issues/get-attachment` — covered, но документированы
+  только в map (недостаточно описаны в самом API).
+
 ## [1.0.6] — 2026-10-07
 
 ### Added (YTMCP-1)

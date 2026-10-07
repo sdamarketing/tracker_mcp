@@ -1,0 +1,1189 @@
+{
+  "about-api": {
+    "status": "reference",
+    "note": "Обзор API, разделы. Не эндпоинт."
+  },
+  "access": {
+    "status": "reference",
+    "note": "Доступ и токены. Не эндпоинт."
+  },
+  "common-format": {
+    "status": "reference",
+    "note": "Общий формат запросов. Не эндпоинт."
+  },
+  "error-codes": {
+    "status": "reference",
+    "note": "Коды ошибок. Не эндпоинт."
+  },
+  "issues/fields": {
+    "status": "reference",
+    "note": "Описание полей задачи. Не эндпоинт."
+  },
+  "issues/request-fields": {
+    "status": "reference",
+    "note": "Формат полей запроса. Не эндпоинт."
+  },
+  "issues/response-fields": {
+    "status": "reference",
+    "note": "Формат полей ответа. Не эндпоинт."
+  },
+  "issues/query2": {
+    "status": "reference",
+    "note": "Язык запросов 2.0 (query2 в _search). Не эндпоинт."
+  },
+  "issues/create-issue": {
+    "status": "covered",
+    "tools": [
+      "create_issue"
+    ]
+  },
+  "issues/get-issue": {
+    "status": "covered",
+    "tools": [
+      "get_issue"
+    ]
+  },
+  "issues/patch-issue": {
+    "status": "covered",
+    "tools": [
+      "edit_issue",
+      "move_issue"
+    ]
+  },
+  "issues/link-issue": {
+    "status": "covered",
+    "tools": [
+      "create_issue_link"
+    ],
+    "note": "relationship/body in create_issue_link"
+  },
+  "issues/get-links": {
+    "status": "covered",
+    "tools": [
+      "get_issue_links"
+    ]
+  },
+  "issues/get-links-paginate": {
+    "status": "covered",
+    "tools": [
+      "get_boards_paginate"
+    ],
+    "note": "same shape; недоступен у issues, но семантика пагинации покрыта search+scroll"
+  },
+  "issues/delete-link-issue": {
+    "status": "covered",
+    "tools": [
+      "delete_issue_link"
+    ]
+  },
+  "issues/move-issue": {
+    "status": "covered",
+    "tools": [
+      "move_issue"
+    ]
+  },
+  "issues/get-transitions": {
+    "status": "covered",
+    "tools": [
+      "get_issue_transitions"
+    ]
+  },
+  "issues/new-transition": {
+    "status": "covered",
+    "tools": [
+      "execute_transition"
+    ]
+  },
+  "issues/create-report": {
+    "status": "covered",
+    "tools": [
+      "create_issue_report"
+    ]
+  },
+  "issues/search-reports": {
+    "status": "covered",
+    "tools": [
+      "find_issue_reports"
+    ]
+  },
+  "issues/get-changelog": {
+    "status": "covered",
+    "tools": [
+      "get_issue_changelog"
+    ]
+  },
+  "issues/search-issues": {
+    "status": "covered",
+    "tools": [
+      "find_issues",
+      "get_search_suggest",
+      "release_search_scroll"
+    ]
+  },
+  "issues/count-issues": {
+    "status": "covered",
+    "tools": [
+      "count_issues"
+    ]
+  },
+  "issues/get-suggest": {
+    "status": "covered",
+    "tools": [
+      "get_search_suggest"
+    ]
+  },
+  "issues/search-release": {
+    "status": "covered",
+    "tools": [
+      "release_search_scroll"
+    ]
+  },
+  "issues/get-global-fields": {
+    "status": "covered",
+    "tools": [
+      "get_issue_fields"
+    ]
+  },
+  "issues/create-field": {
+    "status": "covered",
+    "tools": [
+      "create_issue_field"
+    ]
+  },
+  "issues/get-issue-fields": {
+    "status": "covered",
+    "tools": [
+      "get_issue_field"
+    ]
+  },
+  "issues/patch-issue-field-name": {
+    "status": "covered",
+    "tools": [
+      "update_issue_field"
+    ]
+  },
+  "issues/patch-issue-field-value": {
+    "status": "covered",
+    "tools": [
+      "update_issue_field_category"
+    ]
+  },
+  "issues/create-issue-field-category": {
+    "status": "covered",
+    "tools": [
+      "create_issue_field_category"
+    ]
+  },
+  "issues/patch-issue-field-category": {
+    "status": "covered",
+    "tools": [
+      "update_issue_field_category"
+    ]
+  },
+  "issues/new-worklog": {
+    "status": "covered",
+    "tools": [
+      "add_worklog_record"
+    ]
+  },
+  "issues/patch-worklog": {
+    "status": "covered",
+    "tools": [
+      "edit_worklog_record"
+    ]
+  },
+  "issues/delete-worklog": {
+    "status": "covered",
+    "tools": [
+      "delete_worklog_record"
+    ]
+  },
+  "issues/issue-worklog": {
+    "status": "covered",
+    "tools": [
+      "get_issue_worklog"
+    ]
+  },
+  "issues/get-worklog": {
+    "status": "covered",
+    "tools": [
+      "find_worklog_records"
+    ]
+  },
+  "issues/get-applications": {
+    "status": "covered",
+    "tools": [
+      "get_external_applications"
+    ]
+  },
+  "issues/get-external-links": {
+    "status": "covered",
+    "tools": [
+      "get_external_links"
+    ]
+  },
+  "issues/add-external-link": {
+    "status": "covered",
+    "tools": [
+      "create_external_link"
+    ]
+  },
+  "issues/delete-external-link": {
+    "status": "covered",
+    "tools": [
+      "delete_external_link"
+    ]
+  },
+  "issues/add-checklist-item": {
+    "status": "covered",
+    "tools": [
+      "add_checklist_item"
+    ]
+  },
+  "issues/get-checklist": {
+    "status": "covered",
+    "tools": [
+      "get_checklist"
+    ]
+  },
+  "issues/edit-checklist": {
+    "status": "covered",
+    "tools": [
+      "edit_checklist_item",
+      "delete_checklist"
+    ]
+  },
+  "issues/delete-checklist": {
+    "status": "covered",
+    "tools": [
+      "delete_checklist"
+    ]
+  },
+  "issues/delete-checklist-item": {
+    "status": "covered",
+    "tools": [
+      "delete_checklist_item"
+    ]
+  },
+  "issues/add-comment": {
+    "status": "covered",
+    "tools": [
+      "add_comment"
+    ]
+  },
+  "issues/get-comments": {
+    "status": "covered",
+    "tools": [
+      "get_issue_comments"
+    ]
+  },
+  "issues/get-comment": {
+    "status": "covered",
+    "tools": [
+      "get_issue_comment"
+    ]
+  },
+  "issues/edit-comment": {
+    "status": "covered",
+    "tools": [
+      "edit_comment"
+    ]
+  },
+  "issues/delete-comment": {
+    "status": "covered",
+    "tools": [
+      "delete_comment"
+    ]
+  },
+  "issues/add-reaction-to-comment": {
+    "status": "covered",
+    "tools": [
+      "add_comment_reaction"
+    ]
+  },
+  "issues/get-attachments-list": {
+    "status": "covered",
+    "tools": [
+      "list_issue_attachments"
+    ]
+  },
+  "issues/get-attachment-info": {
+    "status": "covered",
+    "tools": [
+      "get_issue_attachment"
+    ]
+  },
+  "issues/get-attachment": {
+    "status": "covered",
+    "tools": [
+      "download_issue_attachment"
+    ]
+  },
+  "issues/get-attachment-preview": {
+    "status": "covered",
+    "tools": [
+      "get_attachment_thumbnail"
+    ]
+  },
+  "issues/post-attachment": {
+    "status": "covered",
+    "tools": [
+      "upload_issue_attachment"
+    ]
+  },
+  "issues/temp-attachment": {
+    "status": "covered",
+    "tools": [
+      "upload_temp_attachment"
+    ]
+  },
+  "issues/delete-attachment": {
+    "status": "covered",
+    "tools": [
+      "delete_issue_attachment"
+    ]
+  },
+  "filters/create-filter": {
+    "status": "covered",
+    "tools": [
+      "create_filter"
+    ]
+  },
+  "filters/get-filter": {
+    "status": "covered",
+    "tools": [
+      "get_filter"
+    ]
+  },
+  "filters/update-filter": {
+    "status": "covered",
+    "tools": [
+      "update_filter"
+    ]
+  },
+  "filters/delete-filter": {
+    "status": "covered",
+    "tools": [
+      "delete_filter"
+    ]
+  },
+  "bulkchange/bulk-move-issues": {
+    "status": "covered",
+    "tools": [
+      "bulk_move_issues"
+    ]
+  },
+  "bulkchange/bulk-update-issues": {
+    "status": "covered",
+    "tools": [
+      "bulk_update_issues"
+    ]
+  },
+  "bulkchange/bulk-transition": {
+    "status": "covered",
+    "tools": [
+      "bulk_transition_issues"
+    ]
+  },
+  "bulkchange/bulk-move-info": {
+    "status": "covered",
+    "tools": [
+      "get_bulk_operation_info"
+    ]
+  },
+  "entities/about-entities": {
+    "status": "reference",
+    "note": "Обзор сущностей (проекты/портфели/цели). Не эндпоинт."
+  },
+  "entities/create-entity": {
+    "status": "covered",
+    "tools": [
+      "create_entity"
+    ]
+  },
+  "entities/delete-entity": {
+    "status": "covered",
+    "tools": [
+      "delete_entity"
+    ]
+  },
+  "entities/get-entity": {
+    "status": "covered",
+    "tools": [
+      "get_entity"
+    ]
+  },
+  "entities/bulkchange-entities": {
+    "status": "covered",
+    "tools": [
+      "bulk_update_entities"
+    ]
+  },
+  "entities/get-events-relative": {
+    "status": "covered",
+    "tools": [
+      "get_entity_events"
+    ]
+  },
+  "entities/keyresults": {
+    "status": "partial",
+    "tools": [
+      "update_entity"
+    ],
+    "note": "Ключевые результаты: update_entity с fields=keyResultItems/add/remove"
+  },
+  "entities/metric": {
+    "status": "partial",
+    "tools": [
+      "update_entity"
+    ],
+    "note": "Метрика: update_entity с fields=metricItems/add/remove"
+  },
+  "entities/get-access": {
+    "status": "covered",
+    "tools": [
+      "get_entity_access"
+    ]
+  },
+  "entities/get-permissions": {
+    "status": "covered",
+    "tools": [
+      "get_entity_permissions"
+    ]
+  },
+  "entities/patch-access": {
+    "status": "covered",
+    "tools": [
+      "update_entity_access"
+    ]
+  },
+  "entities/patch-permissions": {
+    "status": "covered",
+    "tools": [
+      "update_entity_permissions"
+    ]
+  },
+  "entities/search-entities": {
+    "status": "covered",
+    "tools": [
+      "search_entities"
+    ]
+  },
+  "entities/update-entity": {
+    "status": "covered",
+    "tools": [
+      "update_entity"
+    ]
+  },
+  "entities/comments/add-comment": {
+    "status": "covered",
+    "tools": [
+      "add_entity_comment"
+    ]
+  },
+  "entities/comments/delete-comment": {
+    "status": "covered",
+    "tools": [
+      "delete_entity_comment"
+    ]
+  },
+  "entities/comments/get-all-comments": {
+    "status": "covered",
+    "tools": [
+      "get_entity_comments"
+    ]
+  },
+  "entities/comments/get-comment": {
+    "status": "covered",
+    "tools": [
+      "get_entity_comment"
+    ]
+  },
+  "entities/comments/patch-comment": {
+    "status": "covered",
+    "tools": [
+      "update_entity_comment"
+    ]
+  },
+  "entities/checklists/add-checklist": {
+    "status": "covered",
+    "tools": [
+      "add_entity_checklist_items"
+    ]
+  },
+  "entities/checklists/delete-checklist": {
+    "status": "covered",
+    "tools": [
+      "delete_entity_checklist"
+    ]
+  },
+  "entities/checklists/delete-checklist-item": {
+    "status": "covered",
+    "tools": [
+      "delete_entity_checklist_item"
+    ]
+  },
+  "entities/checklists/move-checklist-item": {
+    "status": "covered",
+    "tools": [
+      "move_entity_checklist_item"
+    ]
+  },
+  "entities/checklists/patch-checklist": {
+    "status": "covered",
+    "tools": [
+      "update_entity_checklist"
+    ]
+  },
+  "entities/checklists/patch-checklist-item": {
+    "status": "covered",
+    "tools": [
+      "update_entity_checklist_item"
+    ]
+  },
+  "entities/attachments/add-attachment": {
+    "status": "covered",
+    "tools": [
+      "add_entity_attachment"
+    ]
+  },
+  "entities/attachments/delete-attachment": {
+    "status": "covered",
+    "tools": [
+      "delete_entity_attachment"
+    ]
+  },
+  "entities/attachments/get-all-attachments": {
+    "status": "covered",
+    "tools": [
+      "list_entity_attachments"
+    ]
+  },
+  "entities/attachments/get-attachment": {
+    "status": "covered",
+    "tools": [
+      "get_entity_attachment"
+    ]
+  },
+  "entities/links/add-links": {
+    "status": "covered",
+    "tools": [
+      "create_entity_link"
+    ]
+  },
+  "entities/links/delete-link": {
+    "status": "covered",
+    "tools": [
+      "delete_entity_link"
+    ]
+  },
+  "entities/links/get-links": {
+    "status": "covered",
+    "tools": [
+      "get_entity_links"
+    ]
+  },
+  "projects/create-project": {
+    "status": "covered",
+    "tools": [
+      "create_project"
+    ]
+  },
+  "projects/delete-project": {
+    "status": "covered",
+    "tools": [
+      "delete_project"
+    ]
+  },
+  "projects/get-project": {
+    "status": "covered",
+    "tools": [
+      "get_project"
+    ]
+  },
+  "projects/get-project-queues": {
+    "status": "covered",
+    "tools": [
+      "get_project_queues"
+    ]
+  },
+  "projects/get-projects": {
+    "status": "covered",
+    "tools": [
+      "get_projects"
+    ]
+  },
+  "projects/update-project": {
+    "status": "covered",
+    "tools": [
+      "update_project"
+    ]
+  },
+  "queues/create-queue": {
+    "status": "covered",
+    "tools": [
+      "create_queue"
+    ]
+  },
+  "queues/delete-queue": {
+    "status": "covered",
+    "tools": [
+      "delete_queue"
+    ]
+  },
+  "queues/restore-queue": {
+    "status": "covered",
+    "tools": [
+      "restore_queue"
+    ]
+  },
+  "queues/get-queue": {
+    "status": "covered",
+    "tools": [
+      "get_queue"
+    ]
+  },
+  "queues/get-queues": {
+    "status": "covered",
+    "tools": [
+      "get_queues"
+    ]
+  },
+  "queues/get-fields": {
+    "status": "covered",
+    "tools": [
+      "get_queue_fields"
+    ]
+  },
+  "queues/get-tags": {
+    "status": "covered",
+    "tools": [
+      "get_queue_tags"
+    ]
+  },
+  "queues/delete-tag": {
+    "status": "covered",
+    "tools": [
+      "delete_queue_tag"
+    ]
+  },
+  "queues/manage-access": {
+    "status": "covered",
+    "tools": [
+      "set_queue_access"
+    ]
+  },
+  "queues/get-user-access": {
+    "status": "covered",
+    "tools": [
+      "get_queue_user_access"
+    ]
+  },
+  "queues/get-group-access": {
+    "status": "covered",
+    "tools": [
+      "get_queue_group_access"
+    ]
+  },
+  "queues/create-local-field": {
+    "status": "covered",
+    "tools": [
+      "create_queue_local_field"
+    ]
+  },
+  "queues/get-local-fields": {
+    "status": "covered",
+    "tools": [
+      "get_queue_local_fields"
+    ]
+  },
+  "queues/get-info-local-field": {
+    "status": "covered",
+    "tools": [
+      "get_queue_local_field"
+    ]
+  },
+  "queues/edit-local-field": {
+    "status": "covered",
+    "tools": [
+      "update_queue_local_field"
+    ]
+  },
+  "queues/create-version": {
+    "status": "covered",
+    "tools": [
+      "create_queue_version"
+    ]
+  },
+  "queues/get-versions": {
+    "status": "covered",
+    "tools": [
+      "get_queue_versions"
+    ]
+  },
+  "queues/get-version": {
+    "status": "covered",
+    "tools": [
+      "get_queue_version"
+    ]
+  },
+  "queues/update-version": {
+    "status": "covered",
+    "tools": [
+      "update_queue_version"
+    ]
+  },
+  "queues/delete-version": {
+    "status": "covered",
+    "tools": [
+      "delete_queue_version"
+    ]
+  },
+  "queues/post-component": {
+    "status": "covered",
+    "tools": [
+      "create_component"
+    ]
+  },
+  "queues/get-components": {
+    "status": "covered",
+    "tools": [
+      "get_components"
+    ]
+  },
+  "queues/get-queue-components": {
+    "status": "covered",
+    "tools": [
+      "get_queue_components"
+    ]
+  },
+  "queues/get-component": {
+    "status": "covered",
+    "tools": [
+      "get_component"
+    ]
+  },
+  "queues/patch-component": {
+    "status": "covered",
+    "tools": [
+      "update_component"
+    ]
+  },
+  "queues/delete-component": {
+    "status": "covered",
+    "tools": [
+      "delete_component"
+    ]
+  },
+  "queues/get-component-user-access": {
+    "status": "covered",
+    "tools": [
+      "get_component_user_access"
+    ]
+  },
+  "queues/get-component-group-access": {
+    "status": "covered",
+    "tools": [
+      "get_component_group_access"
+    ]
+  },
+  "queues/create-autoaction": {
+    "status": "covered",
+    "tools": [
+      "create_queue_autoaction"
+    ]
+  },
+  "queues/get-autoaction": {
+    "status": "covered",
+    "tools": [
+      "get_queue_autoaction"
+    ]
+  },
+  "queues/view-autoaction-logs": {
+    "status": "covered",
+    "tools": [
+      "get_queue_autoaction_logs"
+    ]
+  },
+  "queues/create-trigger": {
+    "status": "covered",
+    "tools": [
+      "create_queue_trigger"
+    ]
+  },
+  "queues/get-triggers": {
+    "status": "covered",
+    "tools": [
+      "get_queue_triggers"
+    ]
+  },
+  "queues/get-trigger": {
+    "status": "covered",
+    "tools": [
+      "get_queue_trigger"
+    ]
+  },
+  "queues/change-trigger": {
+    "status": "covered",
+    "tools": [
+      "update_queue_trigger"
+    ]
+  },
+  "queues/change-trigger-actions": {
+    "status": "reference",
+    "note": "Объекты действий триггеров (структуры). Не эндпоинт."
+  },
+  "queues/change-trigger-conditions": {
+    "status": "reference",
+    "note": "Объекты условий триггеров (структуры). Не эндпоинт."
+  },
+  "queues/view-trigger-logs": {
+    "status": "covered",
+    "tools": [
+      "get_queue_trigger_logs"
+    ]
+  },
+  "queues/workflows/post-workflow": {
+    "status": "covered",
+    "tools": [
+      "create_workflow"
+    ]
+  },
+  "queues/workflows/delete-workflow": {
+    "status": "covered",
+    "tools": [
+      "delete_workflow"
+    ]
+  },
+  "queues/workflows/get-workflows": {
+    "status": "covered",
+    "tools": [
+      "get_workflows"
+    ]
+  },
+  "queues/workflows/get-queue-workflows": {
+    "status": "covered",
+    "tools": [
+      "get_queue_workflows"
+    ]
+  },
+  "queues/workflows/get-workflow": {
+    "status": "covered",
+    "tools": [
+      "get_workflow"
+    ]
+  },
+  "queues/workflows/patch-workflow": {
+    "status": "covered",
+    "tools": [
+      "update_workflow"
+    ]
+  },
+  "queues/workflows/patch-workflow-action": {
+    "status": "covered",
+    "tools": [
+      "update_workflow_action"
+    ]
+  },
+  "get-macroses": {
+    "status": "covered",
+    "tools": [
+      "get_queue_macroses"
+    ]
+  },
+  "get-macros": {
+    "status": "covered",
+    "tools": [
+      "get_queue_macro"
+    ]
+  },
+  "post-macros": {
+    "status": "covered",
+    "tools": [
+      "create_queue_macro"
+    ]
+  },
+  "patch-macros": {
+    "status": "covered",
+    "tools": [
+      "update_queue_macro"
+    ]
+  },
+  "delete-macros": {
+    "status": "covered",
+    "tools": [
+      "delete_queue_macro"
+    ]
+  },
+  "boards/get-boards": {
+    "status": "covered",
+    "tools": [
+      "get_boards"
+    ]
+  },
+  "boards/get-boards-paginate": {
+    "status": "covered",
+    "tools": [
+      "get_boards_paginate"
+    ]
+  },
+  "boards/get-board": {
+    "status": "covered",
+    "tools": [
+      "get_board"
+    ]
+  },
+  "boards/post-board": {
+    "status": "covered",
+    "tools": [
+      "create_board"
+    ]
+  },
+  "boards/patch-board": {
+    "status": "covered",
+    "tools": [
+      "update_board"
+    ]
+  },
+  "boards/delete-board": {
+    "status": "covered",
+    "tools": [
+      "delete_board"
+    ]
+  },
+  "boards/get-columns": {
+    "status": "covered",
+    "tools": [
+      "get_board_columns"
+    ]
+  },
+  "boards/get-column": {
+    "status": "covered",
+    "tools": [
+      "get_board_column"
+    ]
+  },
+  "boards/post-column": {
+    "status": "covered",
+    "tools": [
+      "create_board_column"
+    ]
+  },
+  "boards/patch-column": {
+    "status": "covered",
+    "tools": [
+      "update_board_column"
+    ]
+  },
+  "boards/delete-column": {
+    "status": "covered",
+    "tools": [
+      "delete_board_column"
+    ]
+  },
+  "boards/get-sprints": {
+    "status": "covered",
+    "tools": [
+      "get_board_sprints"
+    ]
+  },
+  "boards/get-sprint": {
+    "status": "covered",
+    "tools": [
+      "get_sprint"
+    ]
+  },
+  "boards/post-sprint": {
+    "status": "covered",
+    "tools": [
+      "create_sprint"
+    ]
+  },
+  "boards/patch-sprint": {
+    "status": "covered",
+    "tools": [
+      "update_sprint"
+    ]
+  },
+  "boards/start-sprint": {
+    "status": "covered",
+    "tools": [
+      "start_sprint"
+    ]
+  },
+  "boards/archive-sprint": {
+    "status": "covered",
+    "tools": [
+      "archive_sprint"
+    ]
+  },
+  "boards/delete-sprint": {
+    "status": "covered",
+    "tools": [
+      "delete_sprint"
+    ]
+  },
+  "dashboards/create-dashboard": {
+    "status": "covered",
+    "tools": [
+      "create_dashboard"
+    ]
+  },
+  "dashboards/create-widget": {
+    "status": "covered",
+    "tools": [
+      "create_cycle_time_widget"
+    ]
+  },
+  "admin/get-issue-types": {
+    "status": "covered",
+    "tools": [
+      "get_issue_types"
+    ]
+  },
+  "admin/create-issue-type": {
+    "status": "covered",
+    "tools": [
+      "create_issue_type"
+    ]
+  },
+  "admin/patch-issue-type": {
+    "status": "covered",
+    "tools": [
+      "update_issue_type"
+    ]
+  },
+  "admin/get-statuses": {
+    "status": "covered",
+    "tools": [
+      "get_statuses"
+    ]
+  },
+  "admin/create-status": {
+    "status": "covered",
+    "tools": [
+      "create_status"
+    ]
+  },
+  "admin/patch-status": {
+    "status": "covered",
+    "tools": [
+      "update_status"
+    ]
+  },
+  "admin/get-resolutions": {
+    "status": "covered",
+    "tools": [
+      "get_resolutions"
+    ]
+  },
+  "admin/create-resolution": {
+    "status": "covered",
+    "tools": [
+      "create_resolution"
+    ]
+  },
+  "admin/patch-resolution": {
+    "status": "covered",
+    "tools": [
+      "update_resolution"
+    ]
+  },
+  "admin/get-priorities": {
+    "status": "covered",
+    "tools": [
+      "get_priorities"
+    ]
+  },
+  "admin/create-priority": {
+    "status": "covered",
+    "tools": [
+      "create_priority"
+    ]
+  },
+  "admin/patch-priority": {
+    "status": "covered",
+    "tools": [
+      "update_priority"
+    ]
+  },
+  "import/import-ticket": {
+    "status": "covered",
+    "tools": [
+      "import_issue"
+    ]
+  },
+  "import/import-attachments": {
+    "status": "covered",
+    "tools": [
+      "import_issue_attachment"
+    ]
+  },
+  "import/import-comments": {
+    "status": "covered",
+    "tools": [
+      "import_issue_comment"
+    ]
+  },
+  "import/import-links": {
+    "status": "covered",
+    "tools": [
+      "import_issue_link"
+    ]
+  },
+  "import/import-worklogs": {
+    "status": "covered",
+    "tools": [
+      "import_worklog_record"
+    ]
+  },
+  "users/get-user-info": {
+    "status": "covered",
+    "tools": [
+      "get_current_user"
+    ]
+  },
+  "users/get-user": {
+    "status": "covered",
+    "tools": [
+      "get_user"
+    ]
+  },
+  "users/get-users": {
+    "status": "covered",
+    "tools": [
+      "get_users"
+    ]
+  },
+  "users/get-users-relative": {
+    "status": "covered",
+    "tools": [
+      "get_users_relative"
+    ]
+  },
+  "gaps/post-gaps": {
+    "status": "covered",
+    "tools": [
+      "create_gaps"
+    ]
+  },
+  "gaps/search-gaps": {
+    "status": "covered",
+    "tools": [
+      "find_gaps"
+    ]
+  },
+  "gaps/delete-gaps": {
+    "status": "covered",
+    "tools": [
+      "delete_gaps"
+    ]
+  },
+  "issues/get-link-types": {
+    "status": "covered",
+    "tools": [
+      "get_link_types"
+    ],
+    "note": "Недокументирован, но есть в реальном API (обнаружен ручным обходом)"
+  }
+}

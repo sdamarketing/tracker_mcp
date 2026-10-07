@@ -19,7 +19,7 @@
     "setup": "node scripts/setup.mjs",
     "links": "node scripts/generate-install-links.mjs",
     "test": "npm run build && node tests/e2e.mjs",
-    "docs:check": "node scripts/check-docs-drift.mjs",
+    "docs:check": "node scripts/check-docs-drift.mjs && node scripts/gen-coverage.mjs --check",
     "docs:update": "node scripts/check-docs-drift.mjs --update",
     "update": "node scripts/self-update.mjs",
     "prepublishOnly": "npm run build && npm run smoke && node tests/e2e.mjs"
