@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.1.0] — 2026-10-07 (unreleased)
+## [1.1.0] — 2026-10-07
 
 ### Added (YTMCP-8)
 - **MCP Resources** (`resources/list` + `resources/read`): URI-схема `tracker://`
