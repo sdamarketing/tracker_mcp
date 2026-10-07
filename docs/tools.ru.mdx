@@ -1,0 +1,85 @@
+---
+title: 187 инструментов
+description: Каталог возможностей tracker-mcp по доменам Трекера
+---
+
+Полное покрытие API v3 Яндекс Трекера. Живая, автогенерируемая таблица:
+[docs/COVERAGE.md](https://github.com/sdamarketing/tracker_mcp/blob/main/docs/COVERAGE.md).
+
+## Задачи (issues) — 25 инструментов
+
+`create_issue` · `get_issue` · `edit_issue` · `move_issue` · `delete_issue` (не существует — delete через transition) ·
+`find_issues` (query + query2 + filter) · `count_issues` · `release_search_scroll` (для >10 000) ·
+`get_search_suggest` · `create_issue_link` · `get_issue_links` · `delete_issue_link` ·
+`get_issue_transitions` · `execute_transition` · `get_issue_changelog` · `get_issue_worklog` ·
+`add_worklog_record` · `edit_worklog_record` · `delete_worklog_record` ·
+`upload_issue_attachment` · `download_issue_attachment` · `get_attachment_thumbnail` ·
+`list_issue_attachments` · `delete_issue_attachment` · `upload_temp_attachment`
+
+## Сущности (entities) — проекты, цели, портфели — 24 инструмента
+
+`create_entity` · `get_entity` · `update_entity` · `delete_entity` · `search_entities` ·
+`bulk_update_entities` · `get_entity_events` ·
+чеклисты · комментарии · вложения · связи · права доступа · `get_entity_access` · `update_entity_access`
+
+**Ключевые результаты целей и метрики** — через `update_entity` с `fields`:
+`keyResultItems`, `metricItems` с операторами `add`/`remove`. Это же попадает в `get_entity`.
+
+## Очереди (queues) — 29 инструментов
+
+`create_queue` · `get_queue` · `get_queues` · `delete_queue` · `restore_queue` ·
+`get_queue_fields` · локальные поля · версии · компоненты ·
+триггеры · автодействия · макросы · воркфлоу · теги · права · `set_queue_access`
+
+## Доски и спринты — 14
+
+`create_board` · `get_board` · `get_boards` · `update_board` · `delete_board` ·
+колонки (CRUD) ·
+`create_sprint` · `get_sprint` · `start_sprint` · `archive_sprint` · `update_sprint` · `delete_sprint`
+
+## Bulk-операции — 4
+
+`bulk_update_issues` · `bulk_move_issues` · `bulk_transition_issues` · `get_bulk_operation_info`
+
+## Комментарии и реакции — 8
+
+`add_comment` · `get_issue_comments` · `get_issue_comment` · `edit_comment` ·
+`delete_comment` · `add_comment_reaction` (12 типов эмодзи) · `get_external_links` ·
+`add_external_link` · `delete_external_link`
+
+## Чеклисты — 5
+
+`add_checklist_item` · `get_checklist` · `edit_checklist_item` · `edit_checklist` ·
+`delete_checklist` · `delete_checklist_item`
+
+## Фильтры, отчёты, подсказки — 6
+
+`create_filter` · `get_filter` · `update_filter` · `delete_filter` ·
+`create_issue_report` · `find_issue_reports`
+
+## Пользователи и справочники — 8
+
+`get_current_user` · `get_users` · `get_users_relative` · `get_user` ·
+типы (create/patch) · статусы · приоритеты · резолюции · `get_priorities` · `get_statuses`
+· `get_issue_types` · `get_resolutions` · `get_issue_fields` · `get_issue_field` ·
+`create_issue_field` · `update_issue_field` · `create_issue_field_category` · `update_issue_field_category`
+
+## Отпуска (gaps) — 3
+
+`create_gaps` · `find_gaps` · `delete_gaps`
+
+## Импорт — 5
+
+`import_issue` · `import_issue_comment` · `import_issue_link` · `import_issue_attachment` · `import_worklog_record`
+
+## Уникальные (не в официальной доке)
+
+`get_link_types` — каталог типов связей (`relates`, `depends`, `blocks`...)  
+`download_entity_attachment` — скачивание вложений проектов/портфелей/целей  
+`serve` (HTTP) — не инструмент, а команда запуска
+
+## Аннотации и безопасность
+
+- `readOnlyHint: true` — 80 инструментов чтения
+- `destructiveHint: true` — все `delete_*` (30 шт)
+- Все `delete_*` и `bulk_*` требуют `confirm: true`

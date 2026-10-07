@@ -1,0 +1,101 @@
+---
+title: Установка
+description: Все способы установить tracker-mcp
+---
+
+## Выберите ваш путь
+
+<CardGroup cols={2}>
+  <Card title="Одна команда" icon="terminal" href="#curl-bash">
+    curl | bash — мастер сам проверит Node, скачает сервер и настроит
+  </Card>
+  <Card title="npm" icon="box" href="#npm">
+    npm i -g tracker-mcp — для привыкших к npm
+  </Card>
+  <Card title="Docker" icon="layers" href="#docker">
+    ghcr.io/sdamarketing/tracker-mcp — изолированно, без Node на хосте
+  </Card>
+  <Card title="Ручная сборка" icon="wrench" href="#manual">
+    git clone → npm i → npm run build
+  </Card>
+</CardGroup>
+
+## curl | bash
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sdamarketing/tracker_mcp/main/install.sh | bash
+```
+
+Установщик показывает баннер с версией и автором, затем по шагам:
+
+1. **Проверка окружения** — Node.js ≥20 (при необходимости ставит LTS через nvm без sudo)
+2. **Скачивание** — `git clone` в `~/.traker-mcp` (повторный запуск = обновление)
+3. **Сборка** — `npm install` → `npm run build` → smoke-тест (187 инструментов)
+4. **Мастер настройки** — токен (ввод скрыт), ID организации, проверка ключей живым
+   запросом к API, выбор AI-клиента стрелочным селектором (↑↓ + Enter),
+   автоматическая запись конфига с бэкапом `.bak`
+5. **Отчёт** — папка, сервер, настроенные клиенты
+
+Переменные для автоматизации и форков:
+
+| Переменная | Назначение |
+|---|---|
+| `TRAKER_INSTALL_DIR` | Куда ставить (по умолчанию `~/.traker-mcp`) |
+| `TRAKER_REPO_URL` | Свой форк (URL git-репо) |
+| `TRAKER_NO_WIZARD=1` | Пропустить мастер |
+| `TRAKER_NO_SKILL=1` | Не предлагать скилл |
+
+## npm
+
+```bash
+npm install -g tracker-mcp
+tracker-mcp setup    # интерактивный мастер (ключи + выбор клиента)
+tracker-mcp links    # страница с кнопками установки в один клик
+tracker-mcp serve    # HTTP-режим (см. страницу HTTP-сервер)
+```
+
+Без аргументов `tracker-mcp` запускает MCP-сервер по stdio — именно эту команду
+пишут в конфиги MCP-клиентов.
+
+## Docker
+
+Образ публикуется в GitHub Container Registry при каждом релизе (по тегу `v*`):
+
+```bash
+docker pull ghcr.io/sdamarketing/tracker-mcp:latest
+```
+
+**stdio (клиент сам запускает контейнер):**
+
+```json
+{
+  "mcpServers": {
+    "yandex-tracker": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm",
+        "-e", "TRACKER_TOKEN", "-e", "TRACKER_ORG_ID",
+        "ghcr.io/sdamarketing/tracker-mcp:latest"]
+    }
+  }
+}
+```
+
+**HTTP (serve):**
+
+```bash
+docker run --rm -p 3407:3407 \
+  -e TRACKER_TOKEN -e TRACKER_ORG_ID \
+  -e MCP_AUTH_TOKEN=вашключ \
+  ghcr.io/sdamarketing/tracker-mcp serve --host 0.0.0.0
+```
+
+## Ручная сборка
+
+```bash
+git clone https://github.com/sdamarketing/tracker_mcp.git ~/traker-mcp
+cd ~/traker-mcp
+npm install && npm run build
+tracker-mcp setup    # или npm run setup
+```
+
+`README.md` рядом: [github.com/sdamarketing/tracker_mcp](https://github.com/sdamarketing/tracker_mcp)

@@ -7,19 +7,51 @@
   "navigation": {
     "groups": [
       {
-        "group": "Руководство",
+        "group": "Начало работы",
         "pages": [
           "index.ru",
           "quickstart.ru",
+          "installation.ru",
+          "clients.ru"
+        ]
+      },
+      {
+        "group": "Эксплуатация",
+        "pages": [
+          "tools.ru",
+          "http-server.ru",
           "security.ru"
         ]
       },
       {
-        "group": "Guide",
+        "group": "Помощь",
+        "pages": [
+          "troubleshooting.ru",
+          "faq.ru"
+        ]
+      },
+      {
+        "group": "Getting started",
         "pages": [
           "index.en",
           "quickstart.en",
+          "installation.en",
+          "clients.en"
+        ]
+      },
+      {
+        "group": "Operations",
+        "pages": [
+          "tools.en",
+          "http-server.en",
           "security.en"
+        ]
+      },
+      {
+        "group": "Help",
+        "pages": [
+          "troubleshooting.en",
+          "faq.en"
         ]
       }
     ]

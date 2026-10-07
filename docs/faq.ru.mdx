@@ -1,0 +1,57 @@
+---
+title: FAQ
+description: Частые вопросы про tracker-mcp
+---
+
+## Чем OAuth отличается от IAM?
+
+| | OAuth (Яндекс 360) | IAM (Yandex Cloud / Identity Hub) |
+|---|---|---|
+| Формат токена | `y0__...` | `t1....` |
+| Срок жизни | ≤ года | ≤ 12 часов |
+| Организации | Яндекс 360 | Yandex Cloud |
+| env | `TRACKER_AUTH=oauth` (дефолт) | `TRACKER_AUTH=iam` |
+
+Чтобы не гадать — мастер сам выберет по формату токена.
+
+## Считает ли агент токены/утрату моих данных?
+
+Токен даёт агенту **ровно ваши права** в Трекере. Для чтения: `tracker:read`.
+Для безопасного режима: `TRACKER_READ_ONLY=1` (остаются 80 инструментов чтения).
+Подробности — на странице [Безопасность](/security.ru).
+
+## Можно ли запустить без интернета / на air-gapped сервере?
+
+Да, через docker-образ. Единственно нужный outbound — `api.tracker.yandex.net`.
+CDN для nvm и assets не нужны, если нода уже стоит.
+
+## Как обновиться?
+
+| Способ установки | Команда |
+|---|---|
+| `curl \| bash` | та же команда `curl …` |
+| `npm i -g` | `npm install -g tracker-mcp@latest` |
+| Docker | `docker pull ghcr.io/sdamarketing/tracker-mcp:latest` |
+| Git-клон | `npm run update` |
+
+Скилл обновляется отдельно: `npx skills update yandex-tracker`.
+
+## Что с логированием?
+
+Сервер логирует в stderr (ошибки, регистрация инструментов). MCP-клиенты
+по-разному показывают логи: в VS Code — Output → MCP, в Cursor — панель MCP.
+
+## Почему API "отвечает медленно" при первом вызове?
+
+Справочники (статусы, приоритеты, типы, резолюции) кэшируются на 10 минут
+(`TRACKER_CACHE_TTL_MS`). Первый запрос по справочнику греет кэш, следующие —
+мгновенные.
+
+## Поддерживается ли Yandex Wiki / Forms / DataLens?
+
+Нет — только Трекер. Дерево API покрыто: 187 инструментов. Для Wiki есть
+другие MCP (контрибьют?).
+
+## Есть баг! Куда писать?
+
+[github.com/sdamarketing/tracker_mcp/issues](https://github.com/sdamarketing/tracker_mcp/issues)

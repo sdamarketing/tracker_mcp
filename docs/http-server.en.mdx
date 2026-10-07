@@ -1,0 +1,59 @@
+---
+title: HTTP server (serve)
+description: Shared usage and production modes
+---
+
+## What this is
+
+Sometimes MCP needs to be an HTTP service, not a stdio process:
+
+- several agents share one instance
+- reverse-proxying / load balancing
+- k8s health probes
+
+```bash
+tracker-mcp serve --port 3407 --host 127.0.0.1
+```
+
+## HTTP auth
+
+Set `MCP_AUTH_TOKEN` — it gates the endpoint:
+
+```bash
+MCP_AUTH_TOKEN=s3cret tracker-mcp serve --port 3407
+curl http://127.0.0.1:3407/mcp -H "Authorization: Bearer s3cret"
+```
+
+Without `MCP_AUTH_TOKEN` the server **refuses to bind to non-loopback hosts** —
+by design (the Tracker token lives in the process env, an open port on the
+network is unacceptable).
+
+## Endpoints
+
+| Method | Path | Returns |
+|---|---|---|
+| GET | `/health` | `{"ok": true, "server": "yandex-tracker", "tools": 187}` |
+| GET/POST/DELETE | `/mcp` | MCP Streamable HTTP (SSE or JSON) |
+
+## Docker (production)
+
+```bash
+docker run -d \
+  --name tracker-mcp \
+  -p 3407:3407 \
+  -e TRACKER_TOKEN=... \
+  -e TRACKER_ORG_ID=... \
+  -e MCP_AUTH_TOKEN=$(openssl rand -base64 32) \
+  -e TRACKER_READ_ONLY=1 \
+  ghcr.io/sdamarketing/tracker-mcp \
+  serve --host 0.0.0.0 --port 3407
+```
+
+k8s readiness/liveness: `GET /health` every 30s.
+
+## Limits
+
+- **Stateless** — no sessions between requests (per the Streamable HTTP spec
+  in this mode). `initialize` arrives with each exchange.
+- One Tracker identity **per process** (env config). Multi-tenant ⇒ several
+  processes on different ports, or a proxy rewriting headers.

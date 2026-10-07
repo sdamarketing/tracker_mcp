@@ -1,0 +1,66 @@
+---
+title: Траблшутинг
+description: Частые ошибки и их решение
+---
+
+## Установка
+
+**`command not found: tracker-mcp`**
+- `npm i -g` ставит в `node_modules/.bin` — проверьте PATH (`npm bin -g`)
+- Или закройте и откройте терминал
+
+**Node.js слишком старый**
+- Нужен 20+. Проверьте: `node --version`
+- Установщик предлагает nvm-установку автоматически
+
+**429 на каждой записи**
+- Лимит Трекера: ~100 RPS с burst. Сервер сам повторяет, но если часто писать —
+  дождитесь 5–10 секунд между пачками
+
+**OAuth vs IAM**
+- Токен вида `y0__...` = OAuth → `TRACKER_AUTH=oauth` (или не задавать)
+- Токен вида `t1....` = IAM → `TRACKER_AUTH=iam`. IAM живёт ≤12 часов
+
+**401 / 403**
+- Проверьте `TRACKER_TOKEN` и `TRACKER_ORG_ID`
+- IAM: токен мог истечь — `[получите новый](https://cloud.yandex.ru/docs/iam/quickstart)`
+- OAuth: проверьте скоуп `tracker:read` + `tracker:write`
+
+**Не видно инструменты в клиенте**
+- Перезапустите клиент после записи конфига
+- Проверьте синтаксис JSONC (не JSON): комментарии `//` разрешены в некоторых клиентах
+- Claude Desktop: проверьте путь в `--add-mcp` — на macOS он ПОЛНЫЙ абсолютный
+
+## Сервер
+
+**`install.sh` долго висит на npm install**
+- Бывает на медленном интернете. Ускорить: `npm install --omit=dev`
+
+**`tracker-mcp serve` — «Address already in use»**
+- Порт занят: `--port 3408`
+
+**Docker: serve не отвечает**
+- Внутри контейнера `--host 0.0.0.0` обязателен (иначе слушает loopback внутри контейнера)
+
+## Инструменты
+
+**"Missing confirm parameter for delete/bulk"**
+- Все деструктивные операции требуют `confirm: true`. Агент должен
+  сначала показать, что будет удалено, и получить ваше «да»
+
+**"Tool X not found"**
+- Имя с префиксом и snake_case: `create_issue`, не `create-issue` и не `createIssue`
+
+**Локальные поля очереди не видны**
+- В задаче обращайтесь по полному ID `6ac4e6a0…--fieldName`, не по короткому ключу
+- `get_queue_local_fields(queueKey)` вернёт список ID
+
+**Резолюция не поставилась при закрытии**
+- `execute_transition` с `extraFields: {resolution: "fixed"}` — у нас
+  в SKILL.md грабли про это
+
+## Skill (npx skills add)
+
+**"No skills found"**
+- `npx skills add sdamarketing/tracker_mcp` (не `install`, репозиторий слешем)
+- В monorepo: `npx skills add sdamarketing/tracker_mcp --skill yandex-tracker`

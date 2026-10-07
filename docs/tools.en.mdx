@@ -1,0 +1,81 @@
+---
+title: The 187 tools
+description: tracker-mcp capability catalog by Tracker domain
+---
+
+Full coverage of the Yandex Tracker v3 API. The live, auto-generated table:
+[docs/COVERAGE.md](https://github.com/sdamarketing/tracker_mcp/blob/main/docs/COVERAGE.md).
+
+## Issues — 25 tools
+
+`create_issue` · `get_issue` · `edit_issue` · `move_issue` ·
+`find_issues` (query + query2 + filter) · `count_issues` · `release_search_scroll` (>10k) ·
+`get_search_suggest` · `create_issue_link` · `get_issue_links` · `delete_issue_link` ·
+`get_issue_transitions` · `execute_transition` · `get_issue_changelog` · worklog CRUD ·
+attachment upload/download/thumbnail/delete · `upload_temp_attachment`
+
+## Entities — projects, goals, portfolios — 24 tools
+
+`create_entity` · `get_entity` · `update_entity` · `delete_entity` · `search_entities` ·
+`bulk_update_entities` · `get_entity_events` ·
+checklists · comments · attachments · links · access management · `get_entity_access`
+
+**Goal key results and metrics** go through `update_entity` with `fields`:
+`keyResultItems` / `metricItems` with `add`/`remove` operators.
+
+## Queues — 29 tools
+
+`create_queue` · `get_queue(s)` · `delete_queue` · `restore_queue` ·
+required fields · local fields · versions · components ·
+triggers · autoactions · macros · workflows · tags · access (`set_queue_access`)
+
+## Boards & sprints — 14
+
+`create_board` · `get_board(s)` · `update_board` · `delete_board` ·
+column CRUD ·
+`create_sprint` · `start_sprint` · `archive_sprint` · `update_sprint` · `delete_sprint`
+
+## Bulk operations — 4
+
+`bulk_update_issues` · `bulk_move_issues` · `bulk_transition_issues` · `get_bulk_operation_info`
+
+## Comments & reactions — 8
+
+`add_comment` · `get_issue_comments` · `get_issue_comment` · `edit_comment` ·
+`delete_comment` · `add_comment_reaction` (12 emoji types) · external links CRUD
+
+## Checklists — 6
+
+`add_checklist_item` · `get_checklist` · `edit_checklist_item` ·
+`delete_checklist` · `delete_checklist_item` · edit-whole-list semantics
+
+## Filters, reports, suggestions — 6
+
+`create_filter` · `get_filter` · `update_filter` · `delete_filter` ·
+`create_issue_report` · `find_issue_reports`
+
+## Users & catalogs — plus admin CRUD
+
+`get_current_user` · `get_users` · `get_users_relative` · `get_user` ·
+issue types / statuses / priorities / resolutions (list + create + patch) ·
+global fields and field categories
+
+## Absences (gaps) — 3
+
+`create_gaps` · `find_gaps` · `delete_gaps`
+
+## Import — 5
+
+`import_issue` · `import_issue_comment` · `import_issue_link` · `import_issue_attachment` · `import_worklog_record`
+
+## Beyond the official docs
+
+`get_link_types` — link-type catalog (`relates`, `depends`, `blocks`...), an
+undocumented endpoint verified live ·
+`download_entity_attachment` — attachments of projects/portfolios/goals
+
+## Annotations & safety
+
+- `readOnlyHint: true` — 80 read tools
+- `destructiveHint: true` — every `delete_*` (30 tools)
+- Every `delete_*` and `bulk_*` requires `confirm: true`

@@ -1,0 +1,69 @@
+---
+title: Подключение к AI-клиентам
+description: VS Code, Cursor, Claude Desktop, Claude Code, opencode, Windsurf, Zed, JetBrains
+---
+
+## Самый простой путь — мастер
+
+```bash
+tracker-mcp setup
+```
+
+Мастер сам спрашивает клиента стрелочным селектором и пишет конфиг куда надо:
+
+- **VS Code** — `code --add-mcp` (или `mcp.jsonc` в профиле)
+- **Cursor** — `~/.cursor/mcp.json`
+- **Claude Desktop** — `claude_desktop_config.json` (macOS: `~/Library/Application Support/Claude/`)
+- **Claude Code** — `claude mcp add yandex-tracker` (или `~/.claude.json`)
+- **opencode** — `~/.config/opencode/opencode.json`
+- **Windsurf** — `~/.codeium/windsurf/mcp_config.json`
+- **Zed** — `settings.json` → `context_servers`
+- **JetBrains (IDEA, WebStorm, PyCharm)** — `.mcp.json` в корне проекта
+
+## Общий принцип
+
+Любой MCP-совместимый клиент получает команду запуска сервера и env-переменные:
+
+```json
+{
+  "command": "tracker-mcp",
+  "env": {
+    "TRACKER_TOKEN": "<ваш OAuth или IAM токен>",
+    "TRACKER_ORG_ID": "<ID организации>",
+    "TRACKER_AUTH": "oauth"  // или iam
+  }
+}
+```
+
+Или глобально, без установки:
+
+```json
+{
+  "command": "npx",
+  "args": ["-y", "tracker-mcp"],
+  "env": { "TRACKER_TOKEN": "...", "TRACKER_ORG_ID": "..." }
+}
+```
+
+## Где лежат конфиги (для ручного редактирования)
+
+| Клиент | Linux/macOS | Windows |
+|---|---|---|
+| VS Code | `~/.config/Code/User/mcp.json` | `%APPDATA%\Code\User\mcp.json` |
+| Cursor | `~/.cursor/mcp.json` | `%USERPROFILE%\.cursor\mcp.json` |
+| Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` | `%APPDATA%\Claude\` |
+| Claude Code | `~/.claude.json` или `claude mcp add` | `claude mcp add` |
+| opencode | `~/.config/opencode/opencode.json` | — |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` | — |
+| Zed | `~/.config/zed/settings.json` | — |
+| JetBrains | `.mcp.json` в корне проекта | то же |
+
+## Скилл
+
+Дополнительно установите скилл — это карта инструментов и база грабель API для агента:
+
+```bash
+npx skills add sdamarketing/tracker_mcp
+```
+
+Мастер предлагает сделать это сам в конце.

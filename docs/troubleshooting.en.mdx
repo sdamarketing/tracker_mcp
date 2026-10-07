@@ -1,0 +1,57 @@
+---
+title: Troubleshooting
+description: Common errors and fixes
+---
+
+## Installation
+
+**`command not found: tracker-mcp`**
+- `npm i -g` bins live in `node_modules/.bin` — check PATH (`npm bin -g`), or open a fresh terminal
+
+**Node.js too old**
+- Need 20+. Check: `node --version`. The installer offers automatic nvm install
+
+**429 on every write**
+- Tracker rate limit (~100 RPS bursting). The server retries itself; for write
+  bursts wait 5–10 seconds between batches
+
+**OAuth vs IAM**
+- `y0__...` = OAuth → `TRACKER_AUTH=oauth` (default)
+- `t1....` = IAM → `TRACKER_AUTH=iam`. IAM tokens live ≤12 hours
+
+**401 / 403**
+- Recheck `TRACKER_TOKEN` and `TRACKER_ORG_ID`
+- IAM: the token may have expired — mint a new one
+- OAuth: make sure the scopes include `tracker:read` + `tracker:write`
+
+**Client can't see the tools**
+- Restart the client after writing config
+- Claude Desktop on macOS needs an absolute path in the config
+
+## Server
+
+**`tracker-mcp serve` — “Address already in use”** → change `--port`
+
+**Docker: serve doesn't answer** → pass `--host 0.0.0.0` inside the container
+(otherwise it binds to the container's loopback)
+
+## Tools
+
+**“Missing confirm parameter for delete/bulk”**
+- All destructive ops require `confirm: true`. The agent must show you what will
+  be deleted first and get your yes
+
+**“Tool X not found”**
+- Names are snake_case: `create_issue`, not `create-issue` or `createIssue`
+
+**Queue local fields not visible**
+- In issues, address them by the compound ID `6ac4e6a0…--fieldName`, not the
+  short key. `get_queue_local_fields(queueKey)` returns IDs
+
+**Resolution didn't apply on close**
+- `execute_transition` with `extraFields: {resolution: "fixed"}`
+
+## Skill (npx skills add)
+
+**“No skills found”**
+- Use `npx skills add sdamarketing/tracker_mcp` (owner/repo with a slash)

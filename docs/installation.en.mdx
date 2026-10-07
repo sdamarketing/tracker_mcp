@@ -1,0 +1,98 @@
+---
+title: Installation
+description: All the ways to install tracker-mcp
+---
+
+## Pick your path
+
+<CardGroup cols={2}>
+  <Card title="One-liner" icon="terminal" href="#curl-bash">
+    curl | bash — wizard checks Node, downloads and configures everything
+  </Card>
+  <Card title="npm" icon="box" href="#npm">
+    npm i -g tracker-mcp
+  </Card>
+  <Card title="Docker" icon="layers" href="#docker">
+    ghcr.io/sdamarketing/tracker-mcp — isolated, no Node on host
+  </Card>
+  <Card title="Manual build" icon="wrench" href="#manual">
+    git clone → npm i → npm run build
+  </Card>
+</CardGroup>
+
+## curl | bash
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sdamarketing/tracker_mcp/main/install.sh | bash
+```
+
+The installer prints a banner with version/author, then walks you through:
+
+1. **Environment check** — Node.js ≥20 (installs LTS via nvm without sudo if needed)
+2. **Download** — `git clone` into `~/.traker-mcp` (re-run = update)
+3. **Build** — `npm install` → `npm run build` → smoke test (187 tools)
+4. **Setup wizard** — token (hidden input), org ID, live credential check against
+   the API, arrow-key client selector (↑↓ + Enter), config written with `.bak` backup
+5. **Report** — folder, server, configured clients
+
+Automation / fork knobs:
+
+| Variable | Purpose |
+|---|---|
+| `TRAKER_INSTALL_DIR` | Install location (default `~/.traker-mcp`) |
+| `TRAKER_REPO_URL` | Your fork (git URL) |
+| `TRAKER_NO_WIZARD=1` | Skip the wizard |
+| `TRAKER_NO_SKILL=1` | Skip the skill offer |
+
+## npm
+
+```bash
+npm install -g tracker-mcp
+tracker-mcp setup    # interactive wizard (keys + client picker)
+tracker-mcp links    # one-click install links page
+tracker-mcp serve    # HTTP mode (see HTTP server page)
+```
+
+Bare `tracker-mcp` starts the stdio MCP server — this is exactly what MCP
+clients invoke.
+
+## Docker
+
+Published to GHCR on every release tag:
+
+```bash
+docker pull ghcr.io/sdamarketing/tracker-mcp:latest
+```
+
+**stdio (client spawns the container):**
+
+```json
+{
+  "mcpServers": {
+    "yandex-tracker": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm",
+        "-e", "TRACKER_TOKEN", "-e", "TRACKER_ORG_ID",
+        "ghcr.io/sdamarketing/tracker-mcp:latest"]
+    }
+  }
+}
+```
+
+**HTTP (serve):**
+
+```bash
+docker run --rm -p 3407:3407 \
+  -e TRACKER_TOKEN -e TRACKER_ORG_ID \
+  -e MCP_AUTH_TOKEN=your-key \
+  ghcr.io/sdamarketing/tracker-mcp serve --host 0.0.0.0
+```
+
+## Manual build
+
+```bash
+git clone https://github.com/sdamarketing/tracker_mcp.git ~/traker-mcp
+cd ~/traker-mcp
+npm install && npm run build
+tracker-mcp setup
+```

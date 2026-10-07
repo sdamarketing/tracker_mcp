@@ -1,0 +1,60 @@
+---
+title: HTTP-сервер (serve)
+description: Совместное использование и production-режимы
+---
+
+## Что это
+
+MCP иногда нужен не как stdio-процесс агента, а как HTTP-сервис:
+
+- несколько агентов делят один инстанс
+- reverse-proxy / балансировка
+- health-пробы для k8s
+
+```bash
+tracker-mcp serve \
+  --port 3407 \
+  --host 127.0.0.1
+```
+
+## Авторизация в HTTP-режиме
+
+Задайте `MCP_AUTH_TOKEN` — он гейтит эндпоинт:
+
+```bash
+MCP_AUTH_TOKEN=s3cret tracker-mcp serve --port 3407
+curl http://127.0.0.1:3407/mcp -H "Authorization: Bearer s3cret"
+```
+
+Без `MCP_AUTH_TOKEN` сервер **откажется привязываться к не-loopback-адресу** —
+по дизайну (токен Трекера лежит в env процесса, голый порт в сети недопустим).
+
+## Эндпоинты
+
+| Метод | Путь | Что возвращает |
+|---|---|---|
+| GET | `/health` | `{"ok": true, "server": "yandex-tracker", "tools": 187}` |
+| GET/POST/DELETE | `/mcp` | MCP Streamable HTTP (SSE или JSON) |
+
+## Docker (production)
+
+```bash
+docker run -d \
+  --name tracker-mcp \
+  -p 3407:3407 \
+  -e TRACKER_TOKEN=... \
+  -e TRACKER_ORG_ID=... \
+  -e MCP_AUTH_TOKEN=$(openssl rand -base64 32) \
+  -e TRACKER_READ_ONLY=1 \
+  ghcr.io/sdamarketing/tracker-mcp \
+  serve --host 0.0.0.0 --port 3407
+```
+
+Health-проба k8s: `GET /health` каждые 30s.
+
+## Ограничения
+
+- **Stateless** — сервер не держит сессий между запросами (как требует MCP
+  Streamable HTTP в таком режиме). `initialize` приходит с каждым запросом.
+- Tracker-учётка **одна на процесс** (env-конфиг). Для multi-tenant запустите
+  несколько процессов на разных портах, либо проксируйте с заменой заголовков.

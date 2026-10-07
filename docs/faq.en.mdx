@@ -1,0 +1,55 @@
+---
+title: FAQ
+description: Frequently asked questions about tracker-mcp
+---
+
+## OAuth vs IAM — which one do I have?
+
+| | OAuth (Yandex 360) | IAM (Yandex Cloud / Identity Hub) |
+|---|---|---|
+| Token format | `y0__...` | `t1....` |
+| Lifetime | up to a year | ≤ 12 hours |
+| Organizations | Yandex 360 | Yandex Cloud |
+| env | `TRACKER_AUTH=oauth` (default) | `TRACKER_AUTH=iam` |
+
+The setup wizard detects the format by itself.
+
+## What data can the agent access?
+
+The token gives the agent **exactly your** Tracker permissions. Read-only
+usage: `tracker:read` scope plus `TRACKER_READ_ONLY=1` (80 read tools only).
+Details — on the [Security](/security.en) page.
+
+## Air-gapped / offline install?
+
+Yes, via the Docker image. The only outbound the server needs is
+`api.tracker.yandex.net`. No CDN required if Node is already installed.
+
+## How do I update?
+
+| Installed via | Command |
+|---|---|
+| `curl \| bash` | re-run the same curl line |
+| `npm i -g` | `npm install -g tracker-mcp@latest` |
+| Docker | `docker pull ghcr.io/sdamarketing/tracker-mcp:latest` |
+| Git clone | `npm run update` |
+
+The skill updates separately: `npx skills update yandex-tracker`.
+
+## Logging?
+
+Server logs go to stderr (errors, tool registration). Clients surface MCP logs
+differently: VS Code → Output → MCP; Cursor → MCP panel.
+
+## Why is the first API call slow?
+
+Catalogs (statuses, priorities, types, resolutions) are cached for 10 minutes
+(`TRACKER_CACHE_TTL_MS`). First call warms the cache, next ones are instant.
+
+## Yandex Wiki / Forms / DataLens?
+
+No — Tracker only. The API tree is fully covered: 187 tools.
+
+## Found a bug!
+
+[github.com/sdamarketing/tracker_mcp/issues](https://github.com/sdamarketing/tracker_mcp/issues)

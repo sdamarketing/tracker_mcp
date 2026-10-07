@@ -9,6 +9,14 @@ description: Install tracker-mcp in five minutes
 curl -fsSL https://raw.githubusercontent.com/sdamarketing/tracker_mcp/main/install.sh | bash
 ```
 
+Greeted by the signature banner (mint→periwinkle gradient on truecolor terminals),
+the installer then checks Node.js (installing via nvm if needed), downloads and
+builds the server into `~/.traker-mcp`, and launches the interactive wizard:
+Tracker token (hidden input), org ID, live credential check against the API,
+arrow-key client selector and automatic config write.
+
+Re-running the same command updates the server.
+
 The installer checks Node.js (installs via nvm if missing), downloads and builds the
 server into `~/.traker-mcp`, then launches an interactive wizard: Tracker token,
 organization id, a live credentials check, an arrow-key AI-client picker, and

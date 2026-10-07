@@ -1,0 +1,69 @@
+---
+title: Connect your AI client
+description: VS Code, Cursor, Claude Desktop, Claude Code, opencode, Windsurf, Zed, JetBrains
+---
+
+## Easiest: the wizard
+
+```bash
+tracker-mcp setup
+```
+
+An arrow-key picker asks which client to configure and writes the config for you:
+
+- **VS Code** — `code --add-mcp` (or profile `mcp.jsonc`)
+- **Cursor** — `~/.cursor/mcp.json`
+- **Claude Desktop** — `claude_desktop_config.json`
+- **Claude Code** — `claude mcp add yandex-tracker`
+- **opencode** — `~/.config/opencode/opencode.json`
+- **Windsurf** — `~/.codeium/windsurf/mcp_config.json`
+- **Zed** — `settings.json` → `context_servers`
+- **JetBrains** (IDEA, WebStorm, PyCharm) — `.mcp.json` in the project root
+
+## The common config shape
+
+Any MCP-compatible client gets the launch command plus env:
+
+```json
+{
+  "command": "tracker-mcp",
+  "env": {
+    "TRACKER_TOKEN": "<your OAuth or IAM token>",
+    "TRACKER_ORG_ID": "<org id>",
+    "TRACKER_AUTH": "oauth"
+  }
+}
+```
+
+Or zero-install via npx:
+
+```json
+{
+  "command": "npx",
+  "args": ["-y", "tracker-mcp"],
+  "env": { "TRACKER_TOKEN": "...", "TRACKER_ORG_ID": "..." }
+}
+```
+
+## Config file locations (manual editing)
+
+| Client | Linux/macOS | Windows |
+|---|---|---|
+| VS Code | `~/.config/Code/User/mcp.json` | `%APPDATA%\Code\User\mcp.json` |
+| Cursor | `~/.cursor/mcp.json` | `%USERPROFILE%\.cursor\mcp.json` |
+| Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` | `%APPDATA%\Claude\` |
+| Claude Code | `~/.claude.json` or `claude mcp add` | `claude mcp add` |
+| opencode | `~/.config/opencode/opencode.json` | — |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` | — |
+| Zed | `~/.config/zed/settings.json` | — |
+| JetBrains | `.mcp.json` in the project root | same |
+
+## Skill
+
+Also install the agent skill — the tool map and API gotchas:
+
+```bash
+npx skills add sdamarketing/tracker_mcp
+```
+
+The wizard offers to do this for you at the end.
