@@ -31,6 +31,13 @@
         ]
       },
       {
+        "group": "Справочник",
+        "pages": [
+          "SETUP",
+          "COVERAGE"
+        ]
+      },
+      {
         "group": "Getting started",
         "pages": [
           "index.en",
@@ -45,6 +52,12 @@
           "tools.en",
           "http-server.en",
           "security.en"
+        ]
+      },
+      {
+        "group": "Reference",
+        "pages": [
+          "COVERAGE"
         ]
       },
       {
