@@ -1,0 +1,41 @@
+name: npm
+
+# npm Trusted Publishing (OIDC): публикует пакет по тегу v* БЕЗ токена и OTP.
+# Одноразовая настройка на npmjs.com: package tracker-mcp → Settings →
+# Trusted Publisher → GitHub Actions: org/user = sdamarketing,
+# repo = tracker_mcp, workflow filename = publish-npm.yml, action = npm publish.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  id-token: write # OIDC для npm Trusted Publishing
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false # в релизной сборке кэш не используем
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm run smoke
+      - run: node tests/e2e.mjs
+
+      - name: Tag must match package.json version
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Тег v$TAG_VERSION ≠ package.json $PKG_VERSION. Синхронизируйте версии."
+            exit 1
+          fi
+
+      - name: Publish to npm (OIDC trusted publishing; provenance — автоматически)
+        run: npm publish --access public

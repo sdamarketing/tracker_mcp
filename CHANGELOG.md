@@ -2,6 +2,13 @@
 
 ## [1.0.7] — 2026-10-07
 
+### Added (YTMCP-7)
+- **`publish-npm.yml`**: npm Trusted Publishing (OIDC) — ручной `npm publish` с
+  OTP больше не нужен; по тегу `v*` npm публикуется из GitHub Actions с
+  автоматическим provenance (публичный репо + публичный пакет). Гард: тег должен
+  совпадать с `package.json`/version.
+- Требуется одна настройка на npmjs.com (см. AGENTS.md «Релизный регламент»).
+
 ### Added (YTMCP-3)
 - **`server.json` + workflow `publish-registry.yml`**: публикация в Official MCP
   Registry (`io.github.sdamarketing/tracker-mcp`) по тегу `v*` через GitHub OIDC.
