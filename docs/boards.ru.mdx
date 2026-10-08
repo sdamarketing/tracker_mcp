@@ -1,0 +1,65 @@
+---
+title: "Доски, спринты, дашборды"
+description: "Доски задач с колонками и их статус-маппингом, спринты полного жизненного цикла, дашборды с виджетом времени цикла"
+---
+
+## Доски
+
+| Инструмент | API |
+|---|---|
+| `get_boards` / `get_boards_paginate` | [Все доски](https://yandex.ru/support/tracker/ru/api/boards/get-boards) / [с пагинацией](https://yandex.ru/support/tracker/ru/api/boards/get-boards-paginate) |
+| `get_board` | [Параметры доски](https://yandex.ru/support/tracker/ru/api/boards/get-board) |
+| `create_board` | [Создать доску](https://yandex.ru/support/tracker/ru/api/boards/post-board) |
+| `update_board` / `delete_board` | [Редактировать](https://yandex.ru/support/tracker/ru/api/boards/patch-board) / [Удалить](https://yandex.ru/support/tracker/ru/api/boards/delete-board) |
+
+<Warning>Создание досок — через `POST /v3/liveBoards`: legacy
+`POST /v3/boards` «работает», но **игнорирует тело запроса** — доска
+создаётся пустой. Сервер вызывает правильный путь за вас.</Warning>
+
+`create_board` принимает `name`, описание, `columns` (с именем и списком
+ключей статусов) и фильтр очереди — доска подтягивает задачи по нему.
+
+## Колонки досок
+
+| Инструмент | API |
+|---|---|
+| `get_board_columns` / `get_board_column` | [Все / одна](https://yandex.ru/support/tracker/ru/api/boards/get-columns) |
+| `create_board_column` / `update_board_column` / `delete_board_column` | [Создать](https://yandex.ru/support/tracker/ru/api/boards/post-column) / [изменить](https://yandex.ru/support/tracker/ru/api/boards/patch-column) / [удалить](https://yandex.ru/support/tracker/ru/api/boards/delete-column) |
+
+Правки гоняются через `If-Match` с версией доски (защита от конкурентных
+правок — 412 при конфликте). Сервер проставляет `If-Match` в ETag-кавычках
+как требует спецификация HTTP.
+
+Каждая колонка маппится на набор ключей статусов задач; WIP-лимит
+(`limit`) — необязателен. У досок есть `backlogColumns` и
+`nonParametrizedColumns` — см.
+[«Редактировать доску»](https://yandex.ru/support/tracker/ru/api/boards/patch-board).
+
+## Спринты
+
+| Инструмент | API |
+|---|---|
+| `get_board_sprints` / `get_sprint` | [Спринты доски](https://yandex.ru/support/tracker/ru/api/boards/get-sprints) / [один](https://yandex.ru/support/tracker/ru/api/boards/get-sprint) |
+| `create_sprint` | [Создать](https://yandex.ru/support/tracker/ru/api/boards/post-sprint) |
+| `update_sprint` | [Изменить](https://yandex.ru/support/tracker/ru/api/boards/patch-sprint) |
+| `start_sprint` / `archive_sprint` | [Запустить](https://yandex.ru/support/tracker/ru/api/boards/start-sprint) / [архивировать](https://yandex.ru/support/tracker/ru/api/boards/archive-sprint) |
+| `delete_sprint` | [Удалить](https://yandex.ru/support/tracker/ru/api/boards/delete-sprint) |
+
+<Warning>Спринты работают только на досках с включённым **бэклогом очереди**
+— это настройка в интерфейсе Трекера, в API её нет; без неё `create_sprint`
+отвечает 422 Even on a board owned by the queue.</Warning>
+
+Статусная модель: `draft → in_progress → released/archived`. Специальный
+хелпер-промпт `sprint-review` доезжает полный цикл «итоги спринта».
+
+## Дашборды
+
+| Инструмент | API |
+|---|---|
+| `create_dashboard` | [Создать](https://yandex.ru/support/tracker/ru/api/dashboards/create-dashboard) |
+| `create_cycle_time_widget` | [Виджет «Время цикла»](https://yandex.ru/support/tracker/ru/api/dashboards/create-widget) |
+
+В API доступен один тип виджета — «Время цикла» по очереди
+(`issueCycleTimeByUpdatedDateRange`). Остальные виджеты собираются из
+**систем отчётов** — см. `create_issue_report` в разделе
+[Автоматизация](/automation.ru).

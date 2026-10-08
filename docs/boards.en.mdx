@@ -1,0 +1,39 @@
+---
+title: "Boards, sprints, dashboards"
+description: "Boards with status-mapped columns, full sprint lifecycle, dashboards with cycle-time widget"
+---
+
+## Boards
+
+| Tool | API |
+|---|---|
+| `get_boards` / `get_boards_paginate` | [List](https://yandex.ru/support/tracker/ru/api/boards/get-boards) / [paginated](https://yandex.ru/support/tracker/ru/api/boards/get-boards-paginate) |
+| `get_board` | [Get](https://yandex.ru/support/tracker/ru/api/boards/get-board) |
+| `create_board` | [Create](https://yandex.ru/support/tracker/ru/api/boards/post-board) — live: `POST /v3/liveBoards` (the legacy `/boards` POST ignores the body) |
+| `update_board` / `delete_board` | [Update](https://yandex.ru/support/tracker/ru/api/boards/patch-board) / [delete](https://yandex.ru/support/tracker/ru/api/boards/delete-board) |
+
+## Columns
+
+`get_board_columns`, `get_board_column`, `create_board_column`,
+`update_board_column`, `delete_board_column` —
+[Columns](https://yandex.ru/support/tracker/ru/api/boards/get-columns).
+Edits are `If-Match`-versioned (412 on conflict); each column maps to a set
+of status keys, optional WIP `limit`.
+
+## Sprints
+
+| Tool | API |
+|---|---|
+| `get_board_sprints` / `get_sprint` | [List](https://yandex.ru/support/tracker/ru/api/boards/get-sprints) / [get](https://yandex.ru/support/tracker/ru/api/boards/get-sprint) |
+| `create_sprint` / `update_sprint` | [Create](https://yandex.ru/support/tracker/ru/api/boards/post-sprint) / [update](https://yandex.ru/support/tracker/ru/api/boards/patch-sprint) |
+| `start_sprint` / `archive_sprint` / `delete_sprint` | [Start](https://yandex.ru/support/tracker/ru/api/boards/start-sprint) / [archive](https://yandex.ru/support/tracker/ru/api/boards/archive-sprint) / [delete](https://yandex.ru/support/tracker/ru/api/boards/delete-sprint) |
+
+<Warning>Sprints need the **queue backlog** enabled (UI-only setting) —
+`create_sprint` returns 422 otherwise.</Warning>
+
+## Dashboards
+
+`create_dashboard`, `create_cycle_time_widget` —
+[Dashboards](https://yandex.ru/support/tracker/ru/api/dashboards/create-dashboard).
+Only the cycle-time widget is available via API; other insights come from
+[issue reports](/automation.en).

@@ -86,7 +86,12 @@ for (const [group, entries] of Object.entries(groups).sort()) {
   for (const [slug, e] of entries.sort()) {
     const name = slug.split('/').pop();
     const tools = (e.tools ?? []).map((t) => `\`${t}\``).join('<br>');
-    lines.push(`| | [\`${name}\`](https://yandex.ru/support/tracker/ru/api/${slug}.md) | ${emoji[e.status]} ${label[e.status]} | ${tools} |`);
+    // Страницы, которых нет в официальном индексе (note: Недокументирован), ведут на саму карту, а не на 404
+    const inSnapshot = snapshot.includes(slug);
+    const nameCell = inSnapshot
+      ? `[\`${name}\`](https://yandex.ru/support/tracker/ru/api/${slug}.md)`
+      : `\`${name}\` *${e.note ?? ''}*`;
+    lines.push(`| | ${nameCell} | ${emoji[e.status]} ${label[e.status]} | ${tools} |`);
   }
   lines.push('');
 }

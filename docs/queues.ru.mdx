@@ -1,0 +1,58 @@
+---
+title: "Очереди: поля, компоненты, версии, доступ"
+description: "Управление очередями: создание, настройка полей и локальных полей, компоненты, версии, права доступа, теги"
+---
+
+Очередь — контейнер задач с собственными воркфлоу, полями и правами.
+Инструменты разбиты на ядро и четыре подобласти.
+
+## Ядро очередей
+
+| Инструмент | API |
+|---|---|
+| `get_queues` / `get_queue` | [Список](https://yandex.ru/support/tracker/ru/api/queues/get-queues) / [Параметры](https://yandex.ru/support/tracker/ru/api/queues/get-queue) |
+| `create_queue` | [Создать очередь](https://yandex.ru/support/tracker/ru/api/queues/create-queue) |
+| `delete_queue` / `restore_queue` (`confirm`, только admin) | [Удалить](https://yandex.ru/support/tracker/ru/api/queues/delete-queue) / [Восстановить](https://yandex.ru/support/tracker/ru/api/queues/restore-queue) |
+| `get_queue_fields` | [Обязательные поля](https://yandex.ru/support/tracker/ru/api/queues/get-fields) |
+| `get_queue_tags` / `delete_queue_tag` | [Теги](https://yandex.ru/support/tracker/ru/api/queues/get-tags) |
+| `get_macros_list`, `get_macro`, `create_macro`, `update_macro`, `delete_macro` | [Макросы](https://yandex.ru/support/tracker/ru/api/get-macroses) |
+
+<Warning>Ключ очереди — **только латиница без цифр** (`WALKX` сойдёт,
+`WALK2` — нет). `issueTypesConfig` при создании неизменяем — учтите тип
+`epic` заранее, если планируется иерархия.</Warning>
+
+## Локальные поля очереди
+
+| Инструмент | API |
+|---|---|
+| `create_queue_local_field` / `get_queue_local_fields` / `get_queue_local_field` / `edit_queue_local_field` | [Локальные поля](https://yandex.ru/support/tracker/ru/api/queues/get-local-fields) |
+
+В самих задачах обращение к локальному полю — по **составному id**
+`6ac4e6a0…--fieldKey` (выдаёт `get_queue_local_fields`), короткий ключ
+не проходит. Типы полей — полные класс-имена (`ru.yandex.startrek.core.fields.StringFieldType`
+и др. — полный список в
+[справочнике](https://yandex.ru/support/tracker/ru/api/queues/create-local-field)).
+
+## Компоненты и версии
+
+Компоненты и версии — два механизма структурирования задач внутри очереди.
+
+| Инструмент | API |
+|---|---|
+| `get_components`, `get_component`, `create_component`, `update_component`, `delete_component` (+ `get_component_user_access`, `get_component_group_access`) | [Компоненты](https://yandex.ru/support/tracker/ru/api/queues/get-components) |
+| `create_queue_version`, `get_queue_versions`, `get_queue_version`, `update_queue_version`, `delete_queue_version` | [Версии](https://yandex.ru/support/tracker/ru/api/queues/create-version) |
+
+<Warning>Создание версии — `POST /v3/versions` (не очередной путь);
+поле дедлайна версии — **`dueDate`**, а не `releaseDate` (обе грабли
+пойманы живым прогоном).</Warning>
+
+## Права доступа
+
+| Инструмент | API |
+|---|---|
+| `set_queue_access` | [Изменение доступа](https://yandex.ru/support/tracker/ru/api/queues/manage-access) |
+| `get_queue_user_access` / `get_queue_group_access` | [Пользователь](https://yandex.ru/support/tracker/ru/api/queues/get-user-access) / [группа](https://yandex.ru/support/tracker/ru/api/queues/get-group-access) |
+
+`set_queue_access` принимает объекты `create|read|write|grant|deny` с
+`users`/`groups`/`roles` (роли: `author`, `assignee`, `follower`, `access`);
+идентификаторы пользователей — логин/uid/passportUid/cloudUid/trackerUid.

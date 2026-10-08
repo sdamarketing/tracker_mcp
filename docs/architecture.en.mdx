@@ -1,0 +1,36 @@
+---
+title: "Server architecture"
+description: "What does what inside traker-mcp: components, data flow, transports, security guards, installers and CI"
+---
+
+## Component map
+
+| Component | File | Responsibility |
+|---|---|---|
+| Config | `src/config.ts` | env: token, org, auth mode, read-only, cache TTL |
+| API client | `src/client.ts` | HTTPS to `api.tracker.yandex.net`, auth headers, OAuth/IAM schemes, multipart, `If-Match`, `/v2` override, readable 4xx errors |
+| Cache | `src/cache.ts` | 10-min TTL catalog cache shared between tools and resources |
+| Tools | `src/tools/*.ts` | 187 tools over the v3 API docs |
+| Resources | `src/resources.ts` | `tracker://` URIs: issue/queue/board/catalog/myself |
+| Prompts | `src/prompts.ts` | 6 ready-made flows (standup, weekly-report…) |
+| Factory | `src/server.ts` | annotations, `TRACKER_READ_ONLY=1` mode |
+| Entry points | `src/index.ts`, `src/serve.ts` | stdio and Streamable HTTP |
+| CLI | `bin/tracker-mcp.mjs` | `serve`, `setup`, `update`, `links` |
+| Wizard | `scripts/setup.mjs` | interactive client configuration |
+| Installer | `install.sh` | curl\|bash: Node via nvm → clone → build → wizard |
+| Checks | `scripts/check-docs-drift.mjs`, `gen-coverage.mjs`, `smoke-test.mjs`, `tests/e2e.mjs` | API-docs drift (199 pages), coverage, smoke, stub-API e2e |
+
+## Security guards
+
+- **Confirm guard** on every `delete_*`/`bulk_*` tool (refuses without `confirm: true`)
+- **`TRACKER_READ_ONLY=1`**: only reads are registered at all
+- **MCP annotations** on all tools (readOnly / destructive hints)
+- **Bearer gate** in HTTP mode; without `MCP_AUTH_TOKEN` the port binds to loopback only
+- **Skill security rules** for agents: Tracker content is data, not instructions
+
+## CI/CD
+
+Every push: `ci.yml` builds, type-checks and tests on Node 20/22/24 plus
+docs-drift and gitleaks. Tags `v*` trigger parallel OIDC publishing: npm
+(Trusted Publishing, provenance), ghcr Docker image, Official MCP Registry
+(waits for both artifacts).

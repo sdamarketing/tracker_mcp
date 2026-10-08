@@ -1,0 +1,43 @@
+---
+title: "Comments, checklists, worklog, attachments"
+description: "Working inside an issue: comments with 12 reactions, checklists, time tracking and file downloads"
+---
+
+## Comments
+
+| Tool | API |
+|---|---|
+| `add_comment` | [Add](https://yandex.ru/support/tracker/ru/api/issues/add-comment) |
+| `get_issue_comments` | [List](https://yandex.ru/support/tracker/ru/api/issues/get-comments) |
+| `get_issue_comment` / `edit_comment` / `delete_comment` | [Single comment ops](https://yandex.ru/support/tracker/ru/api/issues/get-comment) |
+| `add_comment_reaction` | [Reaction](https://yandex.ru/support/tracker/ru/api/issues/add-reaction-to-comment) — `LIKE`, `HEART`, `ROCKET`, `FIRE`, `OK`… 12 types |
+
+## Checklists
+
+`get_checklist`, `add_checklist_item`, `edit_checklist_item`,
+`delete_checklist_item`, `delete_checklist` — see
+[Checklist](https://yandex.ru/support/tracker/ru/api/issues/get-checklist).
+
+<Warning>The API PATCHes the **whole checklist** — the server reads and
+re-submits the full item list for you when you call `edit_checklist_item`.</Warning>
+
+## Worklog (time tracking)
+
+| Tool | API |
+|---|---|
+| `add_worklog_record` | [Add](https://yandex.ru/support/tracker/ru/api/issues/new-worklog) |
+| `edit_worklog_record` / `delete_worklog_record` | [Edit](https://yandex.ru/support/tracker/ru/api/issues/patch-worklog) / [delete](https://yandex.ru/support/tracker/ru/api/issues/delete-worklog) |
+| `get_issue_worklog` / `find_worklog_records` | [Per-issue](https://yandex.ru/support/tracker/ru/api/issues/issue-worklog) / [search](https://yandex.ru/support/tracker/ru/api/issues/get-worklog) |
+
+Durations are ISO 8601 (`PT2H30M`, `P3D`). Edit/delete need the issue key
+**and** the record id — path `/v3/issues/{issue}/worklog/{id}`.
+
+## Attachments
+
+| Tool | API |
+|---|---|
+| `list_issue_attachments` / `get_issue_attachment` | [List](https://yandex.ru/support/tracker/ru/api/issues/get-attachments-list) / [info](https://yandex.ru/support/tracker/ru/api/issues/get-attachment-info) |
+| `download_issue_attachment` | [Download](https://yandex.ru/support/tracker/ru/api/issues/get-attachment) — text as text, images ≤8 МБ as image content, else base64 |
+| `get_attachment_thumbnail` | [Thumbnail](https://yandex.ru/support/tracker/ru/api/issues/get-attachment-preview) |
+| `upload_issue_attachment` / `upload_temp_attachment` | [Upload](https://yandex.ru/support/tracker/ru/api/issues/post-attachment) / [temp file](https://yandex.ru/support/tracker/ru/api/issues/temp-attachment) (one-shot id) |
+| `delete_issue_attachment` | [Delete](https://yandex.ru/support/tracker/ru/api/issues/delete-attachment) (`confirm: true`) |

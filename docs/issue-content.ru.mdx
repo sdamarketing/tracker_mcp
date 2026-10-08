@@ -1,0 +1,67 @@
+---
+title: "Комментарии, чеклисты, учёт времени, вложения"
+description: "Работа с содержимым задачи: комментарии с реакциями, чеклисты, worklog (списания времени), файлы и миниатюры — и тонкости каждого"
+---
+
+Все инструменты этой страницы работают «внутри» задачи по её ключу
+(`issueId`), имеют реакции/уведомления и свои грабли.
+
+## Комментарии
+
+| Инструмент | Что делает | API |
+|---|---|---|
+| `add_comment` | Комментарий (поддерживает YFM-разметку) | [Добавить комментарий](https://yandex.ru/support/tracker/ru/api/issues/add-comment) |
+| `get_issue_comments` | Список пагинированно | [Комментарии](https://yandex.ru/support/tracker/ru/api/issues/get-comments) |
+| `get_issue_comment` | Один комментарий (id или longId) | [Один комментарий](https://yandex.ru/support/tracker/ru/api/issues/get-comment) |
+| `edit_comment` | Правка (вложенный путь `{id}/comments/{commentId}`) | [Редактировать](https://yandex.ru/support/tracker/ru/api/issues/edit-comment) |
+| `delete_comment` | Удаление (`confirm: true`) | [Удалить](https://yandex.ru/support/tracker/ru/api/issues/delete-comment) |
+| `add_comment_reaction` | Реакция: `LIKE`, `DISLIKE`, `LAUGH`, `HOORAY`, `CONFUSED`, `HEART`, `ROCKET`, `EYES`, `FIRE`, `OK`, `FACEPALM`, `CHECK` | [Добавить реакцию](https://yandex.ru/support/tracker/ru/api/issues/add-reaction-to-comment) |
+
+## Чеклисты
+
+| Инструмент | API |
+|---|---|
+| `get_checklist` | [Просмотр](https://yandex.ru/support/tracker/ru/api/issues/get-checklist) |
+| `add_checklist_item` | [Добавить пункт](https://yandex.ru/support/tracker/ru/api/issues/add-checklist-item) |
+| `edit_checklist_item` | [Редактировать чеклист](https://yandex.ru/support/tracker/ru/api/issues/edit-checklist) |
+| `delete_checklist_item` / `delete_checklist` | [Удалить пункт](https://yandex.ru/support/tracker/ru/api/issues/delete-checklist-item) / [весь чеклист](https://yandex.ru/support/tracker/ru/api/issues/delete-checklist) |
+
+<Warning>API требует при PATCH **весь список пунктов целиком** — сервер перед
+`edit_checklist_item` сам читает чеклист и подставляет остальные пункты,
+агенту достаточно передать `id` и изменения.</Warning>
+
+## Учёт времени (worklog)
+
+| Инструмент | API |
+|---|---|
+| `add_worklog_record` | [Добавить запись](https://yandex.ru/support/tracker/ru/api/issues/new-worklog) |
+| `edit_worklog_record` / `delete_worklog_record` | [Редактировать](https://yandex.ru/support/tracker/ru/api/issues/patch-worklog) / [удалить](https://yandex.ru/support/tracker/ru/api/issues/delete-worklog) |
+| `get_issue_worklog` | [По задаче](https://yandex.ru/support/tracker/ru/api/issues/issue-worklog) |
+| `find_worklog_records` | [Поиск по авторам/датам](https://yandex.ru/support/tracker/ru/api/issues/get-worklog) |
+
+Длительность — **ISO 8601** (`PT2H30M`, `P3D`, `P1W`),
+`get_issue_worklog` не содержит поля `spent` — суммируйте `duration`.
+
+<Warning>При удалении записи нужен **и** `issueId`, **и** `worklogId` —
+путь `/v3/issues/{issue}/worklog/{id}` (в ранних версиях сервер требовал
+только id записи; API отвечал 404 — исправлено в 1.0.4).</Warning>
+
+## Файлы
+
+| Инструмент | Что делает | API |
+|---|---|---|
+| `list_issue_attachments` | Список с метаданными | [Список файлов](https://yandex.ru/support/tracker/ru/api/issues/get-attachments-list) |
+| `get_issue_attachment` | Метаданные одного | [Информация](https://yandex.ru/support/tracker/ru/api/issues/get-attachment-info) |
+| `download_issue_attachment` | **Содержимое**: текст — текстом, до ~8 МБ картинки — как image-контент в ответ, больше — base64 | [Скачать файл](https://yandex.ru/support/tracker/ru/api/issues/get-attachment) |
+| `get_attachment_thumbnail` | Миниатюра изображения | [Скачать превью](https://yandex.ru/support/tracker/ru/api/issues/get-attachment-preview) |
+| `upload_issue_attachment` | Загрузка к задаче (multipart) | [Прикрепить файл](https://yandex.ru/support/tracker/ru/api/issues/post-attachment) |
+| `upload_temp_attachment` | Временный файл (id используется **один раз**) | [Временный файл](https://yandex.ru/support/tracker/ru/api/issues/temp-attachment) |
+| `delete_issue_attachment` | Удаление (`confirm: true`) | [Удалить](https://yandex.ru/support/tracker/ru/api/issues/delete-attachment) |
+
+Назначение временных файлов: их id передаётся в `attachmentIds` при создании
+комментария до задачи и в `add_entity_attachment` (файлы у сущностей крепятся
+только через временные, см. [Проекты и цели](/projects.ru)).
+
+<Warning>Скачанные файлы — недоверенное содержимое: `skills/yandex-tracker`
+обучает агента не воспринимать текст новостей и вложений как инструкции
+(prompt injection).</Warning>

@@ -1,0 +1,46 @@
+---
+title: "Automation: bulk, filters, reports, triggers, autoactions, workflows"
+description: "Mass operations with jobs, saved filters, exportable reports, queue triggers and autoactions, organization workflows"
+---
+
+## Bulk operations
+
+All four are async — the job status goes via `get_bulk_operation_info`.
+Guard: `confirm: true` required.
+
+| Tool | API |
+|---|---|
+| `bulk_update_issues` / `bulk_move_issues` / `bulk_transition_issues` | [Bulk change](https://yandex.ru/support/tracker/ru/api/bulkchange/bulk-update-issues) |
+| `get_bulk_operation_info` | [Operation status](https://yandex.ru/support/tracker/ru/api/bulkchange/bulk-move-info) |
+
+## Filters and reports
+
+| Tool | API |
+|---|---|
+| `create_filter`, `get_filter`, `update_filter`, `delete_filter` | [Filters](https://yandex.ru/support/tracker/ru/api/filters/create-filter) — delete is `DELETE /v2/...` |
+| `create_issue_report` / `find_issue_reports` | [Reports](https://yandex.ru/support/tracker/ru/api/issues/create-report) — xlsx/xml/csv |
+
+## Queue triggers
+
+`create_trigger`, `get_triggers`, `get_trigger`, `update_trigger`,
+`get_trigger_logs` (webhook-action logs only) —
+[Triggers](https://yandex.ru/support/tracker/ru/api/queues/create-trigger).
+Actions: `Transition`, `CalculateFormula`, `Update`, `Move`, `CreateComment`,
+`CreateChecklist`, `Webhook`, `CreateIssue`. Conditions are events, checklist,
+comment, link, field rules — see
+[trigger actions](https://yandex.ru/support/tracker/ru/api/queues/change-trigger-actions).
+
+## Autoactions (on schedule)
+
+`create_autoaction`, `get_queue_autoactions`, `get_autoaction`,
+`get_autoaction_logs` — [Autoactions](https://yandex.ru/support/tracker/ru/api/queues/create-autoaction).
+`issueUpdate` takes **field values**, not transition ids.
+
+## Workflows
+
+`get_workflows`, `get_workflow`, `get_queue_workflows`, `create_workflow`,
+`update_workflow`, `update_workflow_action`, `delete_workflow` —
+[Workflows](https://yandex.ru/support/tracker/ru/api/queues/workflows/get-workflows).
+
+Model: actions hang on the status they leave **from**; `target` — destination
+status key; `statusType` is set only in the UI editor.

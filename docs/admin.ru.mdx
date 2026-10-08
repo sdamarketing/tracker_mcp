@@ -1,0 +1,79 @@
+---
+title: "Администрирование: справочники, поля, импорт, отпуска, пользователи"
+description: "Управление под самим Трекером организации: типы/статусы/приоритеты/резолюции, глобальные поля, миграция-импорт, отпуска, пользователи"
+---
+
+Административные инструменты требуют расширенных прав (токен владельца или
+администратора организации).
+
+## Справочники (чтение + запись)
+
+| Справочник | Инструменты | API |
+|---|---|---|
+| Типы задач | `get_issue_types` + `create_issue_type`, `update_issue_type` | [Типы](https://yandex.ru/support/tracker/ru/api/admin/get-issue-types) |
+| Статусы | `get_statuses` + `create_status`, `update_status` | [Статусы](https://yandex.ru/support/tracker/ru/api/admin/get-statuses) |
+| Резолюции | `get_resolutions` + `create_resolution`, `update_resolution` | [Резолюции](https://yandex.ru/support/tracker/ru/api/admin/get-resolutions) |
+| Приоритеты | `get_priorities` + `create_priority`, `update_priority` | [Приоритеты](https://yandex.ru/support/tracker/ru/api/admin/get-priorities) |
+| Типы связей | `get_link_types` (только чтение) | — |
+
+Все четыре admin-создания требуют `name: {ru, en}` и `key` (латиница с
+маленькой буквы). `update_*` — с опциональной `version` для блокировки от
+конкурентных правок.
+
+<Warning>В API **нет удаления** типов/статусов/приоритетов/резолюций —
+записи навсегда. В тестовой организации не создавайте лишних: их придётся
+скрывать в UI.</Warning>
+
+<Note>У справочников включён внутренний TTL-кэш на 10 минут (настраивается
+`TRACKER_CACHE_TTL_MS`) — созданная запись отображается мгновенно, т.к.
+после записи кэш инвалидируется.</Note>
+
+## Глобальные поля задач
+
+| Инструмент | API |
+|---|---|
+| `get_fields` / `get_field` | [Список](https://yandex.ru/support/tracker/ru/api/issues/get-issue-fields) |
+| `create_field` | [Создать](https://yandex.ru/support/tracker/ru/api/issues/create-field) |
+| `rename_field` (PATCH с `version`) | [Переименовать](https://yandex.ru/support/tracker/ru/api/issues/patch-issue-field-name) |
+| `update_field` | [Редактировать](https://yandex.ru/support/tracker/ru/api/issues/patch-issue-field-value) |
+| `create_field_category` / `update_field_category` | [Категории полей](https://yandex.ru/support/tracker/ru/api/issues/create-issue-field-category) |
+
+Тип поля — полное класс-имя (`ru.yandex.startrek.core.fields.StringFieldType`,
+`UserFieldType`, …), значения списка — `optionsProvider: {type, values}`
+(до 3000).
+
+## Пользователи
+
+| Инструмент | API |
+|---|---|
+| `get_current_user` | [myself](https://yandex.ru/support/tracker/ru/api/users/get-user-info) |
+| `get_user` | [По логину/uid](https://yandex.ru/support/tracker/ru/api/users/get-user) |
+| `get_users` | [Список с фильтрами email/group + пагинация](https://yandex.ru/support/tracker/ru/api/users/get-users) |
+| `get_users_relative` | [Относительная пагинация >10 000](https://yandex.ru/support/tracker/ru/api/users/get-users-relative) |
+
+## Отпуска и отсутствия
+
+| Инструмент | API |
+|---|---|
+| `create_gaps` | [Создать](https://yandex.ru/support/tracker/ru/api/gaps/post-gaps) |
+| `find_gaps` | [Найти](https://yandex.ru/support/tracker/ru/api/gaps/search-gaps) |
+| `delete_gaps` | [Удалить](https://yandex.ru/support/tracker/ru/api/gaps/delete-gaps) |
+
+Типы: `vacation`, `paid_day_off`, `illness`, `absence`, `trip`,
+`conference_trip`, `conference`, `learning`, `maternity`, `duty`.
+
+## Импорт (миграция из других трекеров)
+
+Инструменты «задним числом» — для миграций. Только для администраторов.
+
+| Инструмент | API |
+|---|---|
+| `import_issue` | [Задача](https://yandex.ru/support/tracker/ru/api/import/import-ticket) |
+| `import_issue_comment` | [Комментарий](https://yandex.ru/support/tracker/ru/api/import/import-comments) |
+| `import_issue_link` | [Связь](https://yandex.ru/support/tracker/ru/api/import/import-links) |
+| `import_worklog_record` | [Worklog](https://yandex.ru/support/tracker/ru/api/import/import-worklogs) |
+| `import_issue_attachment` | [Вложение (multipart)](https://yandex.ru/support/tracker/ru/api/import/import-attachments) |
+
+Обязательные параметры: `queue`, `summary`, `createdAt`,
+`createdBy` + пары `updatedAt`+`updatedBy`, тройки `resolution`+`resolvedAt`+`resolvedBy`.
+Поддержаны пользовательские `status`, `type`, `priority` с прошлых систем.

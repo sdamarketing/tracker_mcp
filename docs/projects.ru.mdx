@@ -1,0 +1,76 @@
+---
+title: "Проекты, цели, портфели (Entities API)"
+description: "Сущности Трекера: проекты с вкладкой «Обзор», цели с ключевыми результатами, портфели — с комментариями, чеклистами К связями и правами"
+---
+
+Проекты, цели и портфели в Трекере — **сущности** (Entities API). У них
+единое API с различием только в `entityType`: `project` | `portfolio` |
+`goal`. Отдельно (исторически) есть API проектов v3 — оба покрыты.
+
+## Создание и правка
+
+| Инструмент | API |
+|---|---|
+| `create_entity` / `update_entity` / `delete_entity` (последний — `confirm`) | [Создание](https://yandex.ru/support/tracker/ru/api/entities/create-entity) |
+| `get_entity` | [Параметры](https://yandex.ru/support/tracker/ru/api/entities/get-entity) |
+| `find_entities` | [Поиск](https://yandex.ru/support/tracker/ru/api/entities/search-entities) |
+| `bulk_update_entities` | [Массовое изменение](https://yandex.ru/support/tracker/ru/api/entities/bulkchange-entities) |
+
+Тело запросов — объект `{"fields": {...}}` (агенту об этом знать не нужно —
+сервер оборачивает сам). Ключевые поля: `summary`, `description`
+(YFM-разметка), `markupType: "md"`, `entityStatus`, `lead`, `clients`,
+`followers`, `team`, `start`, `end`, `quarter` (формат `2026 Q4`), `tags`,
+`parentEntity` (портфель для проекта), `keyResultItems` (для целей),
+`metricItems` (метрики любых сущностей).
+
+<Warning>`get_entity` без `fields` возвращает **голый каркас** — все
+контентные поля нужно перечислить явно. Полного поля `priority` у сущностей
+нет. Вехи («milestones») существуют только в интерфейсе — в API не
+отображаются вообще.</Warning>
+
+## Статусные наборы (разные у проектов/портфелей и целей)
+
+| Сущность | Ключи `entityStatus` |
+|---|---|
+| Проект / портфель | `in_progress`, `launched`, `postponed`, `at_risk`, `blocked`, `achieved`… |
+| Цель | `on_track`, `at_risk`, `achieved`, `exceeded`, `not_achieved`… |
+
+Вызов с `on_track` у проекта даёт 422 — см.
+[«Типы сущностей»](https://yandex.ru/support/tracker/ru/api/entities/about-entities).
+
+## Жизнь сущности (вкладка «Обзор»)
+
+| Инструмент | API |
+|---|---|
+| `add_entity_comment` / `get_entity_comments` / `get_entity_comment` / `update_entity_comment` / `delete_entity_comment` | [Комментарии](https://yandex.ru/support/tracker/ru/api/entities/comments/add-comment) |
+| `add_entity_checklist`, `update_entity_checklist*, `delete_entity_checklist*` | [Чеклисты](https://yandex.ru/support/tracker/ru/api/entities/checklists/add-checklist) |
+| `get_entity_attachments`, `get_entity_attachment`, `add_entity_attachment`, `delete_entity_attachment` | [Вложения](https://yandex.ru/support/tracker/ru/api/entities/attachments/get-all-attachments) |
+| `create_entity_link`, `get_entity_links`, `delete_entity_link` | [Связи](https://yandex.ru/support/tracker/ru/api/entities/links/add-links) |
+| `get_entity_events` | [История событий](https://yandex.ru/support/tracker/ru/api/entities/get-events-relative) |
+| `wait_entity_status_change` не нужен — историю читаем событиями | — |
+
+Связи: `create_entity_link` принимает **массив** `links`; типы связей
+зависят от сущности — для целей `parent entity` / `child entity` /
+`is supported by`, для проектов/портфелей `depends on` / `works towards` /
+`is dependent by`.
+
+<Warning>Параметр `comment` из `update_entity` (в PATCH-запросе) — НЕ
+попадает в ленту комментариев сущности. Для ленты всегда
+`add_entity_comment`.</Warning>
+
+## Права доступа
+
+| Инструмент | API |
+|---|---|
+| `get_entity_permissions` / `update_entity_permissions` | [Прямые права](https://yandex.ru/support/tracker/ru/api/entities/get-permissions) |
+| `get_entity_extended_permissions` / `update_entity_extended_permissions` | [Наследуемые](https://yandex.ru/support/tracker/ru/api/entities/get-access) |
+
+Гранты/ревоки по `READ` / `WRITE` / `GRANT` для `users` (логин/uid),
+групп (id) и ролей (`AUTHOR`, `OWNER`, `CLIENT`, `FOLLOWER`, `MEMBER`).
+Если включено наследование (`permissionSources`), прямые правки
+отвергаются — сначала снимите наследование.
+
+Также доступен легаси-проектный API (5 GET/PATCH эндпоинтов):
+[список](https://yandex.ru/support/tracker/ru/api/projects/get-projects) и
+[создание](https://yandex.ru/support/tracker/ru/api/projects/create-project).
+Предпочитайте сущности — в них есть современные фичи (связи, статусы, KRs).

@@ -1,0 +1,35 @@
+---
+title: "Queues: fields, components, versions, access"
+description: "Queue management: creation with type/workflow config, local fields, components, versions, access rights, tags"
+---
+
+## Queue core
+
+| Tool | API |
+|---|---|
+| `get_queues` / `get_queue` | [List](https://yandex.ru/support/tracker/ru/api/queues/get-queues) / [Get](https://yandex.ru/support/tracker/ru/api/queues/get-queue) |
+| `create_queue` | [Create](https://yandex.ru/support/tracker/ru/api/queues/create-queue) — key is **latin letters only, no digits**; `issueTypesConfig` is immutable |
+| `delete_queue` / `restore_queue` | [Delete](https://yandex.ru/support/tracker/ru/api/queues/delete-queue) / [restore](https://yandex.ru/support/tracker/ru/api/queues/restore-queue) (admin, `confirm`) |
+| `get_queue_fields` | [Required fields](https://yandex.ru/support/tracker/ru/api/queues/get-fields) |
+| `get_queue_tags` / `delete_queue_tag` | [Tags](https://yandex.ru/support/tracker/ru/api/queues/get-tags) |
+| Macros: `get_macros_list`, `get_macro`, `create_macro`, `update_macro`, `delete_macro` | [Macroses](https://yandex.ru/support/tracker/ru/api/get-macroses) |
+
+## Local fields
+
+`create_queue_local_field`, `get_queue_local_fields`, `get_queue_local_field`,
+`edit_queue_local_field` — [Local fields](https://yandex.ru/support/tracker/ru/api/queues/get-local-fields).
+Inside issues they are addressed by compound id `…--fieldKey`.
+
+## Components and versions
+
+| Tool | API |
+|---|---|
+| `get_components`, `get_component`, `create_component`, `update_component`, `delete_component`, `get_component_*_access` | [Components](https://yandex.ru/support/tracker/ru/api/queues/get-components) |
+| `create_queue_version` (POST `/v3/versions`), `get_queue_versions`, `get_queue_version`, `update_queue_version`, `delete_queue_version` | [Versions](https://yandex.ru/support/tracker/ru/api/queues/get-versions) — version due field is **`dueDate`**, not `releaseDate` |
+
+## Access rights
+
+| Tool | API |
+|---|---|
+| `set_queue_access` | [Manage access](https://yandex.ru/support/tracker/ru/api/queues/manage-access) — `create|read|write|grant|deny` × `users|groups|roles` |
+| `get_queue_user_access` / `get_queue_group_access` | [User](https://yandex.ru/support/tracker/ru/api/queues/get-user-access) / [group](https://yandex.ru/support/tracker/ru/api/queues/get-group-access) |

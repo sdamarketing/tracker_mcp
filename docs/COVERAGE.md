@@ -208,7 +208,7 @@ To update: `npm run coverage` (regenerate) then commit.
 | | [`get-global-fields`](https://yandex.ru/support/tracker/ru/api/issues/get-global-fields.md) | ✅ covered | `get_issue_fields` |
 | | [`get-issue`](https://yandex.ru/support/tracker/ru/api/issues/get-issue.md) | ✅ covered | `get_issue` |
 | | [`get-issue-fields`](https://yandex.ru/support/tracker/ru/api/issues/get-issue-fields.md) | ✅ covered | `get_issue_field` |
-| | [`get-link-types`](https://yandex.ru/support/tracker/ru/api/issues/get-link-types.md) | ✅ covered | `get_link_types` |
+| | `get-link-types` *Недокументирован, но есть в реальном API (обнаружен ручным обходом)* | ✅ covered | `get_link_types` |
 | | [`get-links`](https://yandex.ru/support/tracker/ru/api/issues/get-links.md) | ✅ covered | `get_issue_links` |
 | | [`get-links-paginate`](https://yandex.ru/support/tracker/ru/api/issues/get-links-paginate.md) | ✅ covered | `get_boards_paginate` |
 | | [`get-suggest`](https://yandex.ru/support/tracker/ru/api/issues/get-suggest.md) | ✅ covered | `get_search_suggest` |

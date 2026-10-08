@@ -1,0 +1,66 @@
+---
+title: "Issues: search, create, lifecycle"
+description: "Everything about issues: query language, scroll search >10k, creation, set/add/remove edits, transitions, links, changelog"
+---
+
+Issues are the core of Tracker and the largest tool group. This page maps
+tools to the official API docs.
+
+## Searching issues
+
+| Tool | What it does | API |
+|---|---|---|
+| `find_issues` | Search via filter, query language string or query2; pagination & scroll | [Find issues](https://yandex.ru/support/tracker/ru/api/issues/search-issues) |
+| `count_issues` | Count only | [Count issues](https://yandex.ru/support/tracker/ru/api/issues/count-issues) |
+| `get_search_suggest` | Title-based suggestions | [Search suggestions](https://yandex.ru/support/tracker/ru/api/issues/get-suggest) |
+| `release_search_scroll` | Free scroll resources | [Clear scroll](https://yandex.ru/support/tracker/ru/api/issues/search-release) |
+
+Pass **exactly one** search source per `find_issues` call: `queue`, `keys`,
+`filter`, `filterId`, `query`, `query2` (priority `queue > keys > filter >
+query`). References: [query language](https://yandex.ru/support/tracker/ru/user/query-filter),
+[query language 2.0](https://yandex.ru/support/tracker/ru/api/issues/query2).
+
+Verified query examples:
+
+```
+Assignee: me() Resolution: empty() "Sort by": Updated DESC
+Queue: YTMCP Status: open "Sort by": Created ASC
+```
+
+For >10 000 results use scroll: `scrollType` + `perScroll`, then
+`release_search_scroll`.
+
+## Lifecycle
+
+| Tool | API |
+|---|---|
+| `create_issue` | [Create](https://yandex.ru/support/tracker/ru/api/issues/create-issue) |
+| `get_issue` | [Get](https://yandex.ru/support/tracker/ru/api/issues/get-issue) |
+| `edit_issue` | [Edit](https://yandex.ru/support/tracker/ru/api/issues/patch-issue) |
+| `move_issue` | [Move](https://yandex.ru/support/tracker/ru/api/issues/move-issue) |
+| `get_issue_changelog` | [Changelog](https://yandex.ru/support/tracker/ru/api/issues/get-changelog) |
+
+Required create-fields per queue: `get_queue_fields`. Full field lists:
+[Issue fields](https://yandex.ru/support/tracker/ru/api/issues/fields),
+[Request body](https://yandex.ru/support/tracker/ru/api/issues/request-fields).
+
+<Warning>Queue-local fields are addressed by **compound id**
+(`61a1b2c3…--fieldKey`), short keys are rejected with 400.</Warning>
+
+## Transitions
+
+| Tool | API |
+|---|---|
+| `get_issue_transitions` | [Transitions](https://yandex.ru/support/tracker/ru/api/issues/get-transitions) |
+| `execute_transition` | [Execute](https://yandex.ru/support/tracker/ru/api/issues/new-transition) — closing requires a **resolution** (`fixed`, `wontFix`…) |
+
+## Issue links
+
+`get_issue_links`, `get_issue_links_paginate`, `create_issue_link`,
+`delete_issue_link`, `get_link_types` — see
+[Issue links](https://yandex.ru/support/tracker/ru/api/issues/get-links).
+
+## External applications
+
+`get_external_applications`, `get_external_links`, `create_external_link`,
+`delete_external_link` — [External links](https://yandex.ru/support/tracker/ru/api/issues/get-external-links).

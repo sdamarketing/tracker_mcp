@@ -1,0 +1,49 @@
+---
+title: "Projects, goals, portfolios (Entities API)"
+description: "Tracker entities: projects with overview tabs, goals with key results, portfolios — comments, checklists, links and access rights"
+---
+
+Projects, goals and portfolios are **entities** — one API, distinguished by
+`entityType`: `project` | `portfolio` | `goal`.
+
+## CRUD & search
+
+| Tool | API |
+|---|---|
+| `create_entity` / `update_entity` / `delete_entity` | [Create](https://yandex.ru/support/tracker/ru/api/entities/create-entity) |
+| `get_entity` | [Get](https://yandex.ru/support/tracker/ru/api/entities/get-entity) — **without `fields` returns just the skeleton** |
+| `find_entities` / `bulk_update_entities` | [Search](https://yandex.ru/support/tracker/ru/api/entities/search-entities) / [bulkchange](https://yandex.ru/support/tracker/ru/api/entities/bulkchange-entities) |
+
+Body is wrapped as `{"fields": {...}}` (server does it). Fields: `summary`,
+`description` (YFM), `entityStatus`, `lead`, `clients`, `followers`, `team`,
+`start`, `end`, `quarter` (`2026 Q4`), `tags`, `parentEntity`, `keyResultItems`,
+`metricItems`. There is **no `priority`** field; milestones are UI-only.
+
+<Note>Status keys differ: projects/portfolios use `in_progress`,
+`at_risk`, `blocked`…; goals use `on_track`, `achieved`, `exceeded`… —
+see [Entities overview](https://yandex.ru/support/tracker/ru/api/entities/about-entities).</Note>
+
+## Entity overview tab
+
+| Tool | API |
+|---|---|
+| `add_entity_comment`, `get_entity_comments`, `get_entity_comment`, `update_entity_comment`, `delete_entity_comment` | [Entity comments](https://yandex.ru/support/tracker/ru/api/entities/comments/add-comment) |
+| Checklists: `add_entity_checklist*` / `update_entity_checklist*` / `delete_entity_checklist*` | [Checklists](https://yandex.ru/support/tracker/ru/api/entities/checklists/add-checklist) |
+| Attachments: `get_entity_attachments` … `delete_entity_attachment` | [Attachments](https://yandex.ru/support/tracker/ru/api/entities/attachments/get-all-attachments) |
+| Links: `create_entity_link` (array!), `get_entity_links`, `delete_entity_link` | [Links](https://yandex.ru/support/tracker/ru/api/entities/links/add-links) |
+| `get_entity_events` | [Event history](https://yandex.ru/support/tracker/ru/api/entities/get-events-relative) |
+
+Link types: goals — `parent entity` / `child entity` / `is supported by`;
+projects/portfolios — `depends on` / `works towards` / `is dependent by`.
+
+<Warning>`update_entity`'s `comment` body param does NOT land in the feed —
+always use `add_entity_comment`.</Warning>
+
+## Access rights
+
+`get_entity_permissions`, `update_entity_permissions`
+([direct](https://yandex.ru/support/tracker/ru/api/entities/get-permissions)),
+`get_entity_extended_permissions`, `update_entity_extended_permissions`
+([inherited](https://yandex.ru/support/tracker/ru/api/entities/get-access)):
+grant/revoke `READ|WRITE|GRANT` × users/groups/roles; inheritance
+(`permissionSources`) must be disabled before direct edits.

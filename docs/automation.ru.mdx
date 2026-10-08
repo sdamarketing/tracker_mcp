@@ -1,0 +1,77 @@
+---
+title: "Автоматизация: триггеры, автодействия, воркфлоу, bulk, фильтры"
+description: "Массовые операции, фильтры, отчёты, триггеры и автодействия очередей, воркфлоу организации"
+---
+
+## Массовые операции (bulk)
+
+Все bulk-операции **асинхронные**: возвращают job, статус смотрите через
+`get_bulk_operation_info`.
+
+| Инструмент | API |
+|---|---|
+| `bulk_update_issues` | [Редактирование](https://yandex.ru/support/tracker/ru/api/bulkchange/bulk-update-issues) |
+| `bulk_move_issues` | [Перенос](https://yandex.ru/support/tracker/ru/api/bulkchange/bulk-move-issues) |
+| `bulk_transition_issues` | [Смена статуса](https://yandex.ru/support/tracker/ru/api/bulkchange/bulk-transition) |
+| `get_bulk_operation_info` | [Статус операции](https://yandex.ru/support/tracker/ru/api/bulkchange/bulk-move-info) |
+
+<Warning>Все bulk- и delete-инструменты сервера требуют `confirm: true` —
+сначала покажите пользователю список целей и получите «да», гард отвергнет
+вызов без подтверждения.</Warning>
+
+## Фильтры и отчёты
+
+| Инструмент | API |
+|---|---|
+| `create_filter` / `get_filter` / `update_filter` / `delete_filter` | [Фильтры](https://yandex.ru/support/tracker/ru/api/filters/create-filter) |
+| `create_issue_report` | [Отчёт](https://yandex.ru/support/tracker/ru/api/issues/create-report) |
+| `find_issue_reports` | [Отчёты](https://yandex.ru/support/tracker/ru/api/issues/search-reports) |
+
+<Warning>Удаление фильтров в API версионируется иначе — `DELETE /v2/filters/{id}`
+(сервер делает это сам). Отчёт `create_issue_report` принимает format
+`xlsx/xml/csv`, один источник (query/filter/filterId) и список полей; в
+`find_issue_reports` без `fields` не раскрывается `summary` — передавайте
+поля явно.</Warning>
+
+## Триггеры очереди
+
+| Инструмент | API |
+|---|---|
+| `create_trigger` | [Создать](https://yandex.ru/support/tracker/ru/api/queues/create-trigger) |
+| `get_triggers`, `get_trigger`, `update_trigger` | [Управление](https://yandex.ru/support/tracker/ru/api/queues/get-triggers) |
+| `get_trigger_logs` | [Логи](https://yandex.ru/support/tracker/ru/api/queues/view-trigger-logs) |
+
+Действия (`actions`): `Transition`, `CalculateFormula`, `Update`, `Move`,
+`CreateComment`, `CreateChecklist`, `Webhook`, `CreateIssue`.
+Условия (`conditions`): события `Event.create|update|comment-create`,
+`ChecklistDone`, условия по комментариям/полям/связям. Составы —
+[«Действия триггеров»](https://yandex.ru/support/tracker/ru/api/queues/change-trigger-actions)
+и [«Условия»](https://yandex.ru/support/tracker/ru/api/queues/change-trigger-conditions)
+(это справочные страницы, не эндпоинты).
+
+<Warning>Логи (`get_trigger_logs`) доступны **только для действий типа
+Webhook** — для остальных истории нет, смотрите changelog задачи.</Warning>
+
+## Автодействия (по расписанию)
+
+| Инструмент | API |
+|---|---|
+| `create_autoaction` | [Создать](https://yandex.ru/support/tracker/ru/api/queues/create-autoaction) |
+| `get_queue_autoactions`, `get_autoaction` | [Получить](https://yandex.ru/support/tracker/ru/api/queues/get-autoaction) |
+| `get_autoaction_logs` | [Логи запусков](https://yandex.ru/support/tracker/ru/api/queues/view-autoaction-logs) |
+
+`issueUpdate` в автодействиях принимает **значения полей**, а не id переходов;
+для смены статуса — действие `Transition`.
+
+## Воркфлоу
+
+| Инструмент | API |
+|---|---|
+| `get_workflows`, `get_workflow`, `get_queue_workflows` | [Чтение](https://yandex.ru/support/tracker/ru/api/queues/workflows/get-workflows) |
+| `create_workflow` / `update_workflow` / `delete_workflow` | [Создание](https://yandex.ru/support/tracker/ru/api/queues/workflows/post-workflow) |
+| `update_workflow_action` | [Правка перехода](https://yandex.ru/support/tracker/ru/api/queues/workflows/patch-workflow-action) |
+
+Модель: **actions висят на статусе, из которого уходят**; `target` — ключ
+статуса назначения; все статусы воркфлоу должны быть достижимы из начального
+действия; `statusType` выставляется только из визуального редактора (UI).
+Проверено живьём на тестовом воркфлоу `W3` в этой организации.

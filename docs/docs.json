@@ -31,6 +31,19 @@
         ]
       },
       {
+        "group": "Возможности",
+        "pages": [
+          "issues.ru",
+          "issue-content.ru",
+          "queues.ru",
+          "boards.ru",
+          "projects.ru",
+          "automation.ru",
+          "admin.ru",
+          "architecture.ru"
+        ]
+      },
+      {
         "group": "Справочник",
         "pages": [
           "SETUP",
@@ -58,6 +71,19 @@
         "group": "Reference",
         "pages": [
           "COVERAGE"
+        ]
+      },
+      {
+        "group": "Capabilities",
+        "pages": [
+          "issues.en",
+          "issue-content.en",
+          "queues.en",
+          "boards.en",
+          "projects.en",
+          "automation.en",
+          "admin.en",
+          "architecture.en"
         ]
       },
       {

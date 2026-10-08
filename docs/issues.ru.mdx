@@ -1,0 +1,97 @@
+---
+title: "Задачи: поиск, создание, жизненный цикл"
+description: "Всё про работу с задачами: язык запросов, scroll-поиск >10 000, создание, редактирование с командами set/add/remove, переходы, связи, история изменений"
+---
+
+Задачи — ядро Трекера и самая большая группа инструментов сервера. Эта страница
+объясняет, какой инструмент за что отвечает, и связывает их со страницами
+официальной документации API.
+
+## Поиск задач
+
+| Инструмент | Что делает | API |
+|---|---|---|
+| `find_issues` | Поиск по фильтру, строке языка запросов или query2; пагинация и scroll | [Найти задачи](https://yandex.ru/support/tracker/ru/api/issues/search-issues) |
+| `count_issues` | Только количество по тем же условиям | [Подсчитать задачи](https://yandex.ru/support/tracker/ru/api/issues/count-issues) |
+| `get_search_suggest` | Подсказки задач по началу названия | [Подсказки поиска](https://yandex.ru/support/tracker/ru/api/issues/get-suggest) |
+| `release_search_scroll` | Освобождение ресурсов scroll-поиска | [Освободить ресурсы](https://yandex.ru/support/tracker/ru/api/issues/search-release) |
+
+### Один источник поиска за вызов
+
+В `find_issues` передаётся **ровно один** из параметров: `queue`, `keys`,
+`filter`, `filterId`, `query`, `query2`. Приоритет при случайной комбинации:
+`queue > keys > filter > query`. Определяющие документы:
+[язык запросов](https://yandex.ru/support/tracker/ru/user/query-filter) и
+[язык запросов 2.0](https://yandex.ru/support/tracker/ru/api/issues/query2).
+
+Примеры строк `query` (все проверены живьём):
+
+```
+Assignee: me() Resolution: empty() "Sort by": Updated DESC
+Queue: YTMCP Status: open "Sort by": Created ASC
+"Queue": YTMCP Summary: ~"баг" "Sort by": Created DESC
+```
+
+### Scroll-поиск (>10 000 результатов)
+
+Обычная пагинация в API не отдаёт больше 10 000 задач на выборку. Для больших
+выборок используется scroll: `find_issues` с `scrollType` +
+`scrollTTLMillis`/`perScroll`, ответ содержит `scrollToken`, следующая страница
+запрашивается с тем же токеном. По завершении —
+`release_search_scroll(scrollToken, scrollId)`. См.
+[прокрутку результатов](https://yandex.ru/support/tracker/ru/api/issues/search-issues#scroll).
+
+## Жизненный цикл
+
+| Инструмент | Что делает | API |
+|---|---|---|
+| `create_issue` | Создание задачи, все поля опциональны | [Создать задачу](https://yandex.ru/support/tracker/ru/api/issues/create-issue) |
+| `get_issue` | Карточка задачи по ключу/id | [Параметры задачи](https://yandex.ru/support/tracker/ru/api/issues/get-issue) |
+| `edit_issue` | Редактирование; `extraFields` — команды `{add, set, remove}` и пользовательские поля | [Задача / редактировать](https://yandex.ru/support/tracker/ru/api/issues/patch-issue) |
+| `move_issue` | Перенос в другую очередь (ключ переприсваивается) | [Перенести задачу](https://yandex.ru/support/tracker/ru/api/issues/move-issue) |
+| `get_issue_changelog` | История изменений полей | [История изменений](https://yandex.ru/support/tracker/ru/api/issues/get-changelog) |
+
+Обязательность полей при создании смотрите в
+`get_queue_fields` перед `create_issue` — очереди часто требуют
+дополнительные поля. Полный список полей задачи:
+[«Поля задачи»](https://yandex.ru/support/tracker/ru/api/issues/fields),
+[«Тело запроса»](https://yandex.ru/support/tracker/ru/api/issues/request-fields),
+[«Формат ответа»](https://yandex.ru/support/tracker/ru/api/issues/response-fields).
+
+<Warning>Локальные поля очереди в задаче адресуются **составным id**
+(`61a1b2c3…--customerSegment`), короткий ключ API отвергнет с 400. Проверено
+живым прогоном.</Warning>
+
+## Переходы по воркфлоу
+
+| Инструмент | Что делает | API |
+|---|---|---|
+| `get_issue_transitions` | Доступные переходы из текущего статуса | [Переходы](https://yandex.ru/support/tracker/ru/api/issues/get-transitions) |
+| `execute_transition` | Выполнение перехода + комментарий + резолюция | [Выполнить переход](https://yandex.ru/support/tracker/ru/api/issues/new-transition) |
+
+<Warning>Закрытие задачи **требует резолюцию** (`fixed`, `wontFix`, `later`,
+`duplicate`…) — почти в каждом воркфлоу. Список: `get_resolutions`.
+Идущий без резолюции вызов отваливается 400.</Warning>
+
+## Связи задач
+
+| Инструмент | Что делает | API |
+|---|---|---|
+| `get_issue_links` | Связи задачи | [Все связи](https://yandex.ru/support/tracker/ru/api/issues/get-links) |
+| `get_issue_links_paginate` | То же с пагинацией | [С пагинацией](https://yandex.ru/support/tracker/ru/api/issues/get-links-paginate) |
+| `create_issue_link` | Связать задачи | [Связать задачи](https://yandex.ru/support/tracker/ru/api/issues/link-issue) |
+| `delete_issue_link` | Убрать связь | [Отвязать](https://yandex.ru/support/tracker/ru/api/issues/delete-link-issue) |
+| `get_link_types` | Справочник типов связей (`relates`, `depends on`…) | недокументирован, найден руками |
+
+Направленные типы (`depends on` / `is dependent by`) в ответе видны как
+`inward`/`outward` — см. примеры в самой доке.
+
+## Внешние приложения
+
+| Инструмент | API |
+|---|---|
+| `get_external_applications` | [Приложения](https://yandex.ru/support/tracker/ru/api/issues/get-applications) |
+| `get_external_links` / `create_external_link` / `delete_external_link` | [Внешние связи](https://yandex.ru/support/tracker/ru/api/issues/get-external-links) |
+
+Пример живого сценария: `create_external_link` с `relationship: "RELATES"` —
+типовая связь с задачей Jira.

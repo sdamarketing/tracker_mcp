@@ -1,0 +1,46 @@
+---
+title: "Admin: catalogs, fields, import, absences, users"
+description: "Organization-level administration: issue types, statuses, resolutions, priorities, global fields, migration import, absences"
+---
+
+Admin tools need elevated rights. Reads are TTL-cached (10 min), writes
+invalidate the cache.
+
+## Catalogs
+
+| Catalog | Tools | API |
+|---|---|---|
+| Issue types | `get_issue_types` + `create_issue_type`, `update_issue_type` | [Types](https://yandex.ru/support/tracker/ru/api/admin/get-issue-types) |
+| Statuses | `get_statuses` + `create_status`, `update_status` | [Statuses](https://yandex.ru/support/tracker/ru/api/admin/get-statuses) |
+| Resolutions | `get_resolutions` + `create_resolution`, `update_resolution` | [Resolutions](https://yandex.ru/support/tracker/ru/api/admin/get-resolutions) |
+| Priorities | `get_priorities` + `create_priority`, `update_priority` | [Priorities](https://yandex.ru/support/tracker/ru/api/admin/get-priorities) |
+| Link types | `get_link_types` (read-only, undocumented endpoint) | — |
+
+Creates need `name: {ru, en}` + `key`; updates accept `version` for
+optimistic locking. <Warning>There is **no delete** for catalog entries on
+the API.</Warning>
+
+## Global issue fields
+
+`get_fields`, `get_field`, `create_field`, `rename_field`, `update_field`,
+`create_field_category`, `update_field_category` — see
+[Issue fields](https://yandex.ru/support/tracker/ru/api/issues/get-issue-fields).
+
+## Users
+
+`get_current_user`, `get_user`, `get_users` (email/group filters),
+`get_users_relative` (>10 000 paging) —
+[Users](https://yandex.ru/support/tracker/ru/api/users/get-users).
+
+## Absences
+
+`create_gaps`, `find_gaps`, `delete_gaps` — workflow keys `vacation`,
+`illness`, `trip`, `maternity`… —
+[Absences](https://yandex.ru/support/tracker/ru/api/gaps/post-gaps).
+
+## Import (migration from other trackers)
+
+`import_issue`, `import_issue_comment`, `import_issue_link`,
+`import_worklog_record`, `import_issue_attachment` —
+[Import issue](https://yandex.ru/support/tracker/ru/api/import/import-ticket).
+Admin-only, lets you create content "back in time" with original authors.
