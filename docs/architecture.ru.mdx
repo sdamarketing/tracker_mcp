@@ -43,7 +43,7 @@ flowchart LR
 | Защита | Где | Что даёт |
 |---|---|---|
 | **Confirm-гард** | `registerTool`-обёртка в `src/server.ts` | все `delete_*` и `bulk_*` отказывают без `confirm: true` |
-| **Read-only mode** | `TRACKER_READ_ONLY=1` | клиент видит только 87 чтений, запись не регистрируется |
+| **Read-only mode** | `TRACKER_READ_ONLY=1` | клиент видит только 80 чтений, запись не регистрируется |
 | **Аннотации** | каждый инструмент | `readOnlyHint` / `destructiveHint` для UI-подтверждений |
 | **Bearer-gate** | `MCP_AUTH_TOKEN` в serve | без него HTTP-эндпоинт биндится только на 127.0.0.1 |
 | **Rate-limit бережливость** | документация/скилл | при 429 — пауза 5–10 с и ретрай; e2e не бьёт боевой API |

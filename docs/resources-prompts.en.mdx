@@ -1,0 +1,53 @@
+---
+title: "Resources & prompts (MCP)"
+description: "Beyond tools: tracker:// resources for reading into context and ready-made prompt flows — standup, reports, triage, sprint review"
+---
+
+Besides the 187 tools the server exposes two more MCP primitives:
+**resources** (URI-based reads, no tool call) and **prompts** (ready-made
+flows with arguments). Available since v1.1.0.
+
+## `tracker://` resources
+
+### Templates (`resources/templates/list`)
+
+| URI | Returns |
+|---|---|
+| `tracker://issue/{KEY}` | Issue card: status, queue, people, description + **last 20 comments** |
+| `tracker://queue/{KEY}` | Queue: lead, defaults + **required create-fields** |
+| `tracker://board/{ID}` | Board: columns, status mapping, WIP limits |
+
+Each template has a list callback: `resources/list` shows **my open issues**,
+all queues and all boards (within API pagination limits). If the API is
+unreachable the list is empty, not a JSON-RPC error.
+
+### Static resources
+
+| URI | Returns |
+|---|---|
+| `tracker://myself` | Your profile (login, uid, email) |
+| `tracker://catalog/statuses` | Status catalog |
+| `tracker://catalog/priorities` | Priorities |
+| `tracker://catalog/types` | Issue types |
+| `tracker://catalog/resolutions` | Resolutions |
+| `tracker://catalog/linktypes` | Issue link types |
+
+Catalogs share the **10-minute TTL cache** with the tools — repeated reads
+don't hit the API; admin writes invalidate it.
+
+## Prompts
+
+Six ready-made flows; in clients with prompt support (Claude Code, Cursor…)
+they show up as commands:
+
+| Prompt | Arguments | Flow |
+|---|---|---|
+| `standup` | `user?` | Done / doing / blockers |
+| `weekly-report` | `queue?`, `project?` | Weekly report per queue or project |
+| `triage` | `queue`, `assignee?` | New-issue triage: priority, assignee, duplicates |
+| `sprint-review` | `board`, `sprint?` | Sprint outcomes: done / not done / carry-over |
+| `close-issue` | `issue`, `resolution?`, `comment?` | Proper closing (resolution is mandatory) |
+| `create-issue` | `queue` | Creation with duplicate & required-field checks |
+
+Both primitives are registered inside the same `buildServer()` — they work
+over stdio and [HTTP serve](/http-server.en) with no extra configuration.

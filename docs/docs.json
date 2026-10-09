@@ -33,6 +33,7 @@
       {
         "group": "Возможности",
         "pages": [
+          "resources-prompts.ru",
           "issues.ru",
           "issue-content.ru",
           "queues.ru",
@@ -76,6 +77,7 @@
       {
         "group": "Capabilities",
         "pages": [
+          "resources-prompts.en",
           "issues.en",
           "issue-content.en",
           "queues.en",
