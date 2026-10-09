@@ -15,6 +15,20 @@ Claude Code, opencode, Windsurf, Zed, JetBrains AI Assistant**.
 > 📘 Подробное руководство для новичков (получение токена, пошаговая настройка
 > каждого клиента, решение проблем) — в **[docs/SETUP.md](docs/SETUP.md)**.
 
+## Документация
+
+Сайт документации (docs7) и LLM-индекс на Context7:
+[context7.com/sdamarketing/tracker_mcp](https://context7.com/sdamarketing/tracker_mcp).
+
+| Раздел | Содержание |
+|---|---|
+| [Начало работы](docs/index.ru.mdx) | Обзор, [быстрый старт](docs/quickstart.ru.mdx), [установка](docs/installation.ru.mdx), [клиенты](docs/clients.ru.mdx) |
+| [Эксплуатация](docs/tools.ru.mdx) | [Инструменты](docs/tools.ru.mdx), [ресурсы и промпты](docs/resources-prompts.ru.mdx), [HTTP-сервер](docs/http-server.ru.mdx), [безопасность](docs/security.ru.mdx) |
+| Гид по возможностям | [Задачи](docs/issues.ru.mdx) · [Комментарии/чеклисты/worklog/файлы](docs/issue-content.ru.mdx) · [Очереди](docs/queues.ru.mdx) · [Доски и спринты](docs/boards.ru.mdx) · [Проекты/цели/портфели](docs/projects.ru.mdx) · [Автоматизация](docs/automation.ru.mdx) · [Админ](docs/admin.ru.mdx) · [Архитектура](docs/architecture.ru.mdx) |
+| Справочник | [SETUP](docs/SETUP.md) · [Карта покрытия API](docs/COVERAGE.md) · [Траблшутинг](docs/troubleshooting.ru.mdx) · [FAQ](docs/faq.ru.mdx) |
+
+Отдельно: [CHANGELOG](CHANGELOG.md) и [skills.sh-скилл](https://skills.sh/sdamarketing/tracker_mcp).
+
 ## Ресурсы и промпты (MCP)
 
 Помимо инструментов сервер отдаёт:
