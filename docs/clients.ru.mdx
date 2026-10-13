@@ -1,6 +1,6 @@
 ---
 title: Подключение к AI-клиентам
-description: VS Code, Cursor, Claude Desktop, Claude Code, opencode, Windsurf, Zed, JetBrains
+description: VS Code, Cursor, Claude Desktop, Claude Code, opencode, Windsurf, Zed, JetBrains, Grok CLI
 ---
 
 ## Самый простой путь — мастер
@@ -19,6 +19,7 @@ tracker-mcp setup
 - **Windsurf** — `~/.codeium/windsurf/mcp_config.json`
 - **Zed** — `settings.json` → `context_servers`
 - **JetBrains (IDEA, WebStorm, PyCharm)** — `.mcp.json` в корне проекта
+- **Grok CLI** — `grok mcp add yandex-tracker` (если `grok` уже в PATH, мастер делает это сам)
 
 ## Общий принцип
 
@@ -57,6 +58,7 @@ tracker-mcp setup
 | Windsurf | `~/.codeium/windsurf/mcp_config.json` | — |
 | Zed | `~/.config/zed/settings.json` | — |
 | JetBrains | `.mcp.json` в корне проекта | то же |
+| Grok CLI | `~/.grok/config.toml` или `grok mcp add` | `%USERPROFILE%\.grok\config.toml` |
 
 ## Скилл
 

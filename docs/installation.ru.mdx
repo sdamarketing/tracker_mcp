@@ -32,8 +32,9 @@ curl -fsSL https://raw.githubusercontent.com/sdamarketing/tracker_mcp/main/insta
 2. **Скачивание** — `git clone` в `~/.traker-mcp` (повторный запуск = обновление)
 3. **Сборка** — `npm install` → `npm run build` → smoke-тест (187 инструментов)
 4. **Мастер настройки** — токен (ввод скрыт), ID организации, проверка ключей живым
-   запросом к API, выбор AI-клиента стрелочным селектором (↑↓ + Enter),
-   автоматическая запись конфига с бэкапом `.bak`
+   запросом к API. Если в PATH есть `grok`, сервер сразу пишется в
+   `~/.grok/config.toml`. Дальше — выбор остальных клиентов стрелочным
+   селектором (↑↓ + Enter) и запись конфига с бэкапом `.bak`
 5. **Отчёт** — папка, сервер, настроенные клиенты
 
 Переменные для автоматизации и форков:
@@ -44,6 +45,7 @@ curl -fsSL https://raw.githubusercontent.com/sdamarketing/tracker_mcp/main/insta
 | `TRAKER_REPO_URL` | Свой форк (URL git-репо) |
 | `TRAKER_NO_WIZARD=1` | Пропустить мастер |
 | `TRAKER_NO_SKILL=1` | Не предлагать скилл |
+| `TRAKER_NO_GROK=1` | Не прописывать сервер в Grok CLI автоматически |
 
 ## npm
 

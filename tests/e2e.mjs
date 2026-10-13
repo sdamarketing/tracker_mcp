@@ -13,6 +13,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 // ---------- stub Tracker API ----------
 const requests = []; // {method, pathname, query, headers, body}
+/** pathname → how many more 429s to return before a normal response. */
+const rateLimits = new Map();
 const stub = createServer((req, res) => {
   let raw = '';
   req.on('data', (c) => (raw += c));
@@ -39,6 +41,19 @@ const stub = createServer((req, res) => {
       '/v3/entities/goal': { id: 42, shortId: 7, type: 'goal' },
     };
     res.setHeader('Content-Type', 'application/json');
+    const left = rateLimits.get(u.pathname) ?? 0;
+    if (left > 0) {
+      rateLimits.set(u.pathname, left - 1);
+      res.statusCode = 429;
+      res.setHeader('Retry-After', '0');
+      res.end(JSON.stringify({ errorMessages: ['Rate Limit Exceeded'] }));
+      return;
+    }
+    if (u.pathname === '/v3/issues/TEST-400') {
+      res.statusCode = 400;
+      res.end(JSON.stringify({ errorMessages: ['Issue not found'] }));
+      return;
+    }
     if (req.method === 'DELETE') {
       res.statusCode = 204;
       res.end();
@@ -97,7 +112,9 @@ const toolText = (r) => r.content?.[0]?.text ?? '';
 
 // ---------- run ----------
 const failures = [];
+let ran = 0;
 async function test(name, fn) {
+  ran++;
   try {
     await fn();
     console.log(`  ✔ ${name}`);
@@ -175,9 +192,21 @@ await test('bulk_update_issues requires confirm', async () => {
 });
 
 await test('API errors surface as isError with readable message', async () => {
-  const r = await tool('get_issue', { key: 'TEST-404' });
-  // stub returns 200 {ok:true} for unknown paths — assert plumbing instead:
-  assert(r.content?.[0]?.text, 'has text');
+  requests.length = 0;
+  const r = await tool('get_issue', { issueId: 'TEST-400' });
+  assert(r.isError, 'expected isError');
+  assert.match(toolText(r), /API error 400/);
+  assert.match(toolText(r), /Issue not found/);
+  assert.equal(requests.length, 1, 'a 400 must not be retried');
+});
+
+await test('429 is retried and then succeeds', async () => {
+  requests.length = 0;
+  rateLimits.set('/v3/issues/TEST-429', 1);
+  const r = await tool('get_issue', { issueId: 'TEST-429' });
+  assert(!r.isError, toolText(r));
+  const hits = requests.filter((q) => q.pathname === '/v3/issues/TEST-429');
+  assert.equal(hits.length, 2, `expected one retry, got ${hits.length}`);
 });
 
 
@@ -286,7 +315,7 @@ child.kill();
 stub.close();
 
 if (failures.length) {
-  console.error(`\nFAILED: ${failures.length}/${failures.length + 13}:`, failures.join(', '));
+  console.error(`\nFAILED: ${failures.length}/${ran}:`, failures.join(', '));
   process.exit(1);
 }
 console.log('\ne2e: all tests passed (stub API, no real token used)');

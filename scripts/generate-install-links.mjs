@@ -192,6 +192,12 @@ async function main() {
     `--transport stdio -e TRACKER_TOKEN=*** -e TRACKER_ORG_ID=*** ` +
     `-- ${JSON.stringify(nodeBin)} ${JSON.stringify(INDEX_JS)}`;
 
+  const grokCommand =
+    `grok mcp add ${SERVER_NAME} --scope user --transport stdio ` +
+    `-e TRACKER_TOKEN=*** -e TRACKER_ORG_ID=*** ` +
+    (auth === 'iam' ? '-e TRACKER_AUTH=iam ' : '') +
+    `-- ${JSON.stringify(nodeBin)} ${JSON.stringify(INDEX_JS)}`;
+
   // --- Терминальный вывод ---------------------------------------------------
 
   console.log('');
@@ -290,6 +296,11 @@ async function main() {
 <p>Создайте файл <code>.mcp.json</code> в корне открытого проекта и вставьте туда:</p>
 <pre><button class="copy" onclick="copy(this)">копировать</button><code>${escapeHtml(JSON.stringify(mcpServersConfig, null, 2))}</code></pre>
 <p>Затем <b>Settings → Tools → AI Assistant → MCP</b> — сервер должен появиться в списке.</p>
+
+<h3>Grok CLI (Grok Build)</h3>
+<p>Если команда <code>grok</code> есть в PATH, мастер <code>tracker-mcp setup</code> выполняет это сам. Вручную:</p>
+<pre><button class="copy" onclick="copy(this)">копировать</button><code>${escapeHtml(grokCommand.replace('***', token).replace('***', orgId))}</code></pre>
+<p>Конфиг: <code>~/.grok/config.toml</code>. Проверка: <code>grok mcp list</code>. Новая сессия подхватит сервер; внутри сессии — <code>/mcps</code>.</p>
 
 <h2>Как проверить, что всё работает</h2>
 <ol>

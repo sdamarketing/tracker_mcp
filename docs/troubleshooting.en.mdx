@@ -12,8 +12,10 @@ description: Common errors and fixes
 - Need 20+. Check: `node --version`. The installer offers automatic nvm install
 
 **429 on every write**
-- Tracker rate limit (~100 RPS bursting). The server retries itself; for write
-  bursts wait 5–10 seconds between batches
+- Tracker rate limit (~100 RPS bursting). The client retries a 429 up to 3 times:
+  it waits for `Retry-After`, otherwise 0.4 / 1.2 / 3 s, capped at 8 s per wait.
+  If the limit still holds, the error is returned to the agent.
+- For write bursts, wait 5–10 seconds between batches. File uploads are not retried.
 
 **OAuth vs IAM**
 - `y0__...` = OAuth → `TRACKER_AUTH=oauth` (default)

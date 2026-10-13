@@ -1,6 +1,6 @@
 ---
 title: "Подробное руководство по установке"
-description: "Полный справочник: все способы получения ключей, настройка всех 8 клиентов вручную, пути конфигов по ОС"
+description: "Полный справочник: все способы получения ключей, настройка всех 9 клиентов вручную, пути конфигов по ОС"
 sidebarTitle: "SETUP (legacy)"
 ---
 
@@ -41,7 +41,7 @@ AI-ассистенты (Claude, Cursor, Copilot в VS Code и другие) у�
 - [ ] **ID вашей организации** в Трекере (раздел 4)
 - [ ] Сам **репозиторий traker_mcp** — скачать или склонировать (раздел 5)
 - [ ] AI-клиент из списка: VS Code, Cursor, Claude Desktop, Claude Code,
-      opencode, Windsurf, Zed или JetBrains IDE
+      opencode, Windsurf, Zed, JetBrains IDE или Grok CLI
 
 Всё это бесплатное. Ничего устанавливать в сам Трекер не нужно.
 
@@ -168,8 +168,11 @@ npm run setup
 Мастер всё сделает сам: проверит окружение и соберёт сервер, спросит токен
 (ввод скрыт) и ID организации, **проверит ключи в API Трекера**, покажет
 интерактивное меню клиентов (↑↓ выбирать · Enter подтверждать) — VS Code,
-Cursor, Claude Desktop, Claude Code, opencode, Windsurf, Zed, JetBrains —
-настроит выбранные клиенты — через их CLI или дописав конфиг-файл с бэкапом —
+Cursor, Claude Desktop, Claude Code, opencode, Windsurf, Zed, JetBrains, Grok CLI.
+Если команда `grok` уже есть в PATH, мастер сразу выполняет `grok mcp add`
+и пишет сервер в `~/.grok/config.toml` (пропуск: `TRAKER_NO_GROK=1`), затем
+предлагает настроить остальные. Конфиг пишется через CLI клиента или в файл
+с бэкапом —
 и напечатает итоговый отчёт. Можно настроить несколько клиентов подряд, а в
 конце мастер предложит сохранить ключи в `.env`, чтобы не вводить их снова.
 
@@ -491,6 +494,29 @@ claude mcp get yandex-tracker
 Проверьте в **Settings → Tools → AI Assistant → MCP**: сервер должен появиться
 в списке. Не забудьте добавить `.mcp.json` в `.gitignore`, если в проекте есть
 другие разработчики без доступа к вашему Трекеру.
+
+---
+
+### 6.9. Grok CLI (Grok Build)
+
+Если `grok` уже установлен, `npm run setup` прописывает сервер сам, до меню
+клиентов. Вручную (в обычном терминале, не внутри сессии Grok):
+
+```bash
+grok mcp add yandex-tracker --scope user --transport stdio \
+  -e TRACKER_TOKEN=y0__ВАШ_ТОКЕН \
+  -e TRACKER_ORG_ID=12345678 \
+  -- node /ПОЛНЫЙ/ПУТЬ/К/traker_mcp/dist/index.js
+```
+
+Запись попадает в `~/.grok/config.toml` (`%USERPROFILE%\.grok\config.toml` на
+Windows). Для одного репозитория добавьте `--scope project` — тогда файл будет
+`.grok/config.toml` в корне проекта; в общий репозиторий токен лучше не коммитить.
+
+Проверка: `grok mcp list` и `grok mcp doctor yandex-tracker`. Сервер виден в
+**новой** сессии. Внутри сессии список — `/mcps`.
+
+Чтобы мастер не трогал Grok: `TRAKER_NO_GROK=1 npm run setup`.
 
 ## 7. Проверка, что всё работает
 

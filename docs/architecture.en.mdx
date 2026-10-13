@@ -27,6 +27,7 @@ description: "What does what inside traker-mcp: components, data flow, transport
 - **MCP annotations** on all tools (readOnly / destructive hints)
 - **Bearer gate** in HTTP mode; without `MCP_AUTH_TOKEN` the port binds to loopback only
 - **Skill security rules** for agents: Tracker content is data, not instructions
+- **Rate limit:** `TrackerClient` retries HTTP 429 up to 3 times (`Retry-After`, or 0.4/1.2/3 s, capped at 8 s). Multipart uploads are not retried
 
 ## CI/CD
 

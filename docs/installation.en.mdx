@@ -32,7 +32,9 @@ The installer prints a banner with version/author, then walks you through:
 2. **Download** — `git clone` into `~/.traker-mcp` (re-run = update)
 3. **Build** — `npm install` → `npm run build` → smoke test (187 tools)
 4. **Setup wizard** — token (hidden input), org ID, live credential check against
-   the API, arrow-key client selector (↑↓ + Enter), config written with `.bak` backup
+   the API. When `grok` is on PATH the server is written to `~/.grok/config.toml`
+   immediately, then the arrow-key client selector (↑↓ + Enter) configures the
+   rest, with a `.bak` backup of each edited file
 5. **Report** — folder, server, configured clients
 
 Automation / fork knobs:
@@ -43,6 +45,7 @@ Automation / fork knobs:
 | `TRAKER_REPO_URL` | Your fork (git URL) |
 | `TRAKER_NO_WIZARD=1` | Skip the wizard |
 | `TRAKER_NO_SKILL=1` | Skip the skill offer |
+| `TRAKER_NO_GROK=1` | Do not auto-register the server with Grok CLI |
 
 ## npm
 

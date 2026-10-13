@@ -1,6 +1,6 @@
 ---
 title: Connect your AI client
-description: VS Code, Cursor, Claude Desktop, Claude Code, opencode, Windsurf, Zed, JetBrains
+description: VS Code, Cursor, Claude Desktop, Claude Code, opencode, Windsurf, Zed, JetBrains, Grok CLI
 ---
 
 ## Easiest: the wizard
@@ -19,6 +19,7 @@ An arrow-key picker asks which client to configure and writes the config for you
 - **Windsurf** — `~/.codeium/windsurf/mcp_config.json`
 - **Zed** — `settings.json` → `context_servers`
 - **JetBrains** (IDEA, WebStorm, PyCharm) — `.mcp.json` in the project root
+- **Grok CLI** — `grok mcp add yandex-tracker` (the wizard does this itself when `grok` is on PATH)
 
 ## The common config shape
 
@@ -57,6 +58,7 @@ Or zero-install via npx:
 | Windsurf | `~/.codeium/windsurf/mcp_config.json` | — |
 | Zed | `~/.config/zed/settings.json` | — |
 | JetBrains | `.mcp.json` in the project root | same |
+| Grok CLI | `~/.grok/config.toml` or `grok mcp add` | `%USERPROFILE%\.grok\config.toml` |
 
 ## Skill
 

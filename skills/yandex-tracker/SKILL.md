@@ -400,7 +400,7 @@ reads are readOnlyHint, deletes are destructiveHint; `TRACKER_READ_ONLY=1` serve
 - `create_entity_link` takes a `links` ARRAY (one call can add several), not flat
   relationship/entity params. `get_entity_links` rows come as `{type, linkFieldValues}` —
   pass `fields` for readable names.
-- 429 = rate limit (common with back-to-back entity writes) — wait 5–10s and retry, don't hammer.
+- 429 = rate limit (common with back-to-back entity writes). The server retries up to 3 times (honors `Retry-After`, each wait capped at 8s; file uploads are not retried). If the error still comes back, wait 5–10s and don't hammer.
 
 
 - `create_queue_version` — the date field is **`dueDate`**, not `releaseDate`.
@@ -436,29 +436,33 @@ User: «Покажи мои открытые задачи за эту недел
   or simpler: find_issues({ filter: { assignee: 'me()', resolution: 'empty()' } })
 
 User: «Закрой TASK-42 как решённую и напиши туда комментарий»
-→ 1. execute_transition({ key: 'TASK-42', transition: 'close',
+→ 1. execute_transition({ issueId: 'TASK-42', transitionId: 'close',
      extraFields: { resolution: 'fixed' } })
-  2. add_comment({ key: 'TASK-42', text: '…' })
-  If transition fails with 400 → get_issue_transitions to see valid ids, then retry.
+  2. add_comment({ issueId: 'TASK-42', text: '…' })
+  If transition fails with 400 → get_issue_transitions({ issueId: 'TASK-42' })
+  to see valid ids, then retry.
 
 User: «Удали закрытые задачи в очереди OPS за прошлый год»
-→ 1. find_issues({ query: 'Queue: OPS Status: resolved() "Resolved at": < 2025-01-01' })
-     и/или count_issues — показать пользователю список и количество
-  2. Спросить подтверждение явно
-  3. Удалять по одной: …destructive ops require confirm: true (все delete_*/bulk_* —
-     сначала покажите, ЧТО будет затронуто, и только затем повторите с confirm=true)
+→ В API нет удаления задач. Найти и показать список:
+  find_issues({ query: 'Queue: OPS Status: resolved() "Resolved at": < 2025-01-01' })
+  и/или count_issues
+  Сказать, что закрытые задачи остаются в Трекере. Если пользователь хочет
+  закрыть ещё открытые — только после явного «да»:
+  bulk_transition_issues({ issues: ['OPS-1'], transition: 'close',
+    values: { resolution: 'fixed' }, confirm: true })
 
 User: «Что сейчас в спринте?»
-→ get_boards → get_sprints({ boardId }) → задачи спринта — это
-  find_issues({ filter: { sprint: { id: … } } }) или board issues через фильтры.
+→ get_boards({}) → get_board_sprints({ boardId }) → задачи спринта:
+  find_issues({ filter: { sprint: '<sprint id>' } })
 
 User: «Поставь реакцию 👍 на последний комментарий в TASK-7»
-→ get_comments({ key: 'TASK-7' }) → взять id последнего →
-  add_comment_reaction({ key: 'TASK-7', commentId, reaction: 'LIKE' })
+→ get_issue_comments({ issueId: 'TASK-7' }) → взять id последнего →
+  add_comment_reaction({ issueId: 'TASK-7', commentId, reaction: 'LIKE' })
 
 User: «Сколько времени я списал в марте?»
-→ search_worklog({ createdBy: 'me()', createdAt: { from: '2025-03-01T00:00:00.000+0300',
-  to: '2025-04-01T00:00:00.000+0300' } })
+→ get_current_user({}) → логин →
+  find_worklog_records({ createdBy: '<login>', createdFrom: '2025-03-01T00:00:00.000+0300',
+    createdTo: '2025-04-01T00:00:00.000+0300' })
 
 ## References
 

@@ -25,6 +25,35 @@ interface RequestOptions {
   ifMatch?: string | number;
 }
 
+/** Повторы после первого 429. Ответ 429 значит, что Трекер отклонил вызов до обработки. */
+const MAX_RATE_LIMIT_RETRIES = 3;
+/** Потолок одной паузы, чтобы длинный Retry-After не подвешивал вызов инструмента. */
+const MAX_RETRY_DELAY_MS = 8_000;
+const BACKOFF_MS = [400, 1_200, 3_000];
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Retry-After — это либо число секунд, либо HTTP-date.
+ * Непонятное значение заменяется на короткую ступенчатую паузу.
+ */
+function retryDelayMs(response: Response, attempt: number): number {
+  const header = response.headers.get('retry-after');
+  if (header) {
+    const seconds = Number(header);
+    if (Number.isFinite(seconds) && seconds >= 0) {
+      return Math.min(seconds * 1000, MAX_RETRY_DELAY_MS);
+    }
+    const when = Date.parse(header);
+    if (!Number.isNaN(when)) {
+      return Math.min(Math.max(0, when - Date.now()), MAX_RETRY_DELAY_MS);
+    }
+  }
+  return BACKOFF_MS[Math.min(attempt, BACKOFF_MS.length - 1)] ?? BACKOFF_MS.at(-1)!;
+}
+
 function formatErrorBody(status: number, text: string): string {
   try {
     const parsed = JSON.parse(text) as {
@@ -77,13 +106,51 @@ export class TrackerClient {
     };
   }
 
-  async request<T>(method: string, path: string, options: RequestOptions = {}): Promise<T> {
+  private buildUrl(path: string, query?: QueryParams): URL {
     const url = new URL(this.resolvePath(path));
-    for (const [key, value] of Object.entries(options.query ?? {})) {
+    for (const [key, value] of Object.entries(query ?? {})) {
       if (value !== undefined) {
         url.searchParams.set(key, String(value));
       }
     }
+    return url;
+  }
+
+  /**
+   * 429 повторяется: запрос не был принят. Multipart не повторяем — тело
+   * FormData после первой отправки может быть уже прочитано, а файл большой.
+   */
+  private async send(url: URL, init: RequestInit, retryOnRateLimit: boolean): Promise<Response> {
+    const attempts = retryOnRateLimit ? MAX_RATE_LIMIT_RETRIES + 1 : 1;
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      let response: Response;
+      try {
+        response = await fetch(url, init);
+      } catch (cause) {
+        const reason = cause instanceof Error ? cause.message : String(cause);
+        throw new TrackerApiError(0, `Failed to reach Yandex Tracker API (${url}): ${reason}`);
+      }
+      if (response.status !== 429 || attempt === attempts - 1) {
+        return response;
+      }
+      const delay = retryDelayMs(response, attempt);
+      await response.arrayBuffer().catch(() => undefined);
+      process.stderr.write(
+        `yandex-tracker: 429 on ${init.method ?? 'GET'} ${url.pathname}, retry ${attempt + 1}/${MAX_RATE_LIMIT_RETRIES} in ${delay}ms\n`,
+      );
+      await sleep(delay);
+    }
+    throw new TrackerApiError(429, 'Yandex Tracker API error 429: rate limit');
+  }
+
+  private async throwIfNotOk(response: Response): Promise<void> {
+    if (response.ok) return;
+    const text = await response.text().catch(() => '');
+    throw new TrackerApiError(response.status, formatErrorBody(response.status, text));
+  }
+
+  async request<T>(method: string, path: string, options: RequestOptions = {}): Promise<T> {
+    const url = this.buildUrl(path, options.query);
 
     const headers: Record<string, string> = { ...this.authHeaders() };
     if (this.config.lang) {
@@ -101,18 +168,8 @@ export class TrackerClient {
       body = JSON.stringify(options.body);
     }
 
-    let response: Response;
-    try {
-      response = await fetch(url, { method, headers, body });
-    } catch (cause) {
-      const reason = cause instanceof Error ? cause.message : String(cause);
-      throw new TrackerApiError(0, `Failed to reach Yandex Tracker API (${url}): ${reason}`);
-    }
-
-    if (!response.ok) {
-      const text = await response.text().catch(() => '');
-      throw new TrackerApiError(response.status, formatErrorBody(response.status, text));
-    }
+    const response = await this.send(url, { method, headers, body }, !options.formData);
+    await this.throwIfNotOk(response);
 
     if (response.status === 204) {
       return undefined as T;
@@ -145,12 +202,7 @@ export class TrackerClient {
     body?: unknown,
     query?: QueryParams,
   ): Promise<ResponseWithHeaders<T>> {
-    const url = new URL(this.resolvePath(path));
-    for (const [key, value] of Object.entries(query ?? {})) {
-      if (value !== undefined) {
-        url.searchParams.set(key, String(value));
-      }
-    }
+    const url = this.buildUrl(path, query);
     const headers: Record<string, string> = {
       ...this.authHeaders(),
       'Content-Type': 'application/json',
@@ -158,18 +210,12 @@ export class TrackerClient {
     if (this.config.lang) {
       headers['Accept-Language'] = this.config.lang;
     }
-    const response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body ?? {}),
-    });
-    if (!response.ok) {
-      const text = await response.text().catch(() => '');
-      throw new TrackerApiError(
-        response.status,
-        formatErrorBody(response.status, text),
-      );
-    }
+    const response = await this.send(
+      url,
+      { method: 'POST', headers, body: JSON.stringify(body ?? {}) },
+      true,
+    );
+    await this.throwIfNotOk(response);
     const outHeaders: Record<string, string> = {};
     response.headers.forEach((value, key) => {
       outHeaders[key] = value;
@@ -186,23 +232,9 @@ export class TrackerClient {
     path: string,
     query?: QueryParams,
   ): Promise<{ buffer: Buffer; contentType: string }> {
-    const url = new URL(this.resolvePath(path));
-    for (const [key, value] of Object.entries(query ?? {})) {
-      if (value !== undefined) {
-        url.searchParams.set(key, String(value));
-      }
-    }
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: this.authHeaders(),
-    });
-    if (!response.ok) {
-      const text = await response.text().catch(() => '');
-      throw new TrackerApiError(
-        response.status,
-        formatErrorBody(response.status, text),
-      );
-    }
+    const url = this.buildUrl(path, query);
+    const response = await this.send(url, { method: 'GET', headers: this.authHeaders() }, true);
+    await this.throwIfNotOk(response);
     const arrayBuffer = await response.arrayBuffer();
     return {
       buffer: Buffer.from(arrayBuffer),

@@ -440,6 +440,11 @@ const CLIENTS = {
     hint: 'Создаст .mcp.json в выбранной папке проекта.',
     menu: '.mcp.json в корне проекта',
   },
+  grok: {
+    title: 'Grok CLI (Grok Build)',
+    hint: 'Выполнит `grok mcp add --scope user`. Если CLI уже есть, мастер делает это сам, до меню.',
+    menu: 'grok mcp add --scope user → ~/.grok/config.toml',
+  },
 };
 
 // --- Мастер -----------------------------------------------------------------------
@@ -552,7 +557,8 @@ async function main() {
 
   // [4/5] Выбор клиента -------------------------------------------------------------
 
-  step(4, 5, 'Для какого AI-клиента настраиваем?');
+  const grokBin = resolveCommand('grok');
+  step(4, 5, grokBin ? 'Grok CLI и остальные клиенты' : 'Для какого AI-клиента настраиваем?');
   const keys = Object.keys(CLIENTS);
   const clientItems = keys.map((key) => ({
     value: key,
@@ -564,13 +570,26 @@ async function main() {
 
   const configured = [];
   const configuredKeys = [];
+  // Grok CLI, если он уже стоит, прописываем сразу — не ждём, что его выберут в меню.
+  if (grokBin && process.env.TRAKER_NO_GROK !== '1') {
+    ok('Grok CLI найден — прописываю yandex-tracker в ~/.grok/config.toml');
+    console.log('');
+    configured.push(await installForClient('grok', { token, orgId, auth }, prompt));
+    configuredKeys.push('grok');
+  }
+
+  let offerAnotherFirst = configuredKeys.includes('grok');
   for (;;) {
+    if (offerAnotherFirst) {
+      offerAnotherFirst = false;
+      if (!(await askYesNo(prompt, '  Настроить ещё один клиент?', false))) break;
+    }
     const idx = await chooseFromList(prompt, {
       title: 'Клиент:',
       items: clientItems,
     });
     if (idx < 0) {
-      warn('Выбор отменён — клиенты не настроены.');
+      if (configured.length === 0) warn('Выбор отменён — клиенты не настроены.');
       break;
     }
     const clientKey = clientItems[idx].value;
@@ -634,6 +653,7 @@ async function main() {
           opencode: 'opencode',
           windsurf: 'windsurf',
           zed: 'zed',
+          grok: 'grok',
         };
         const args = ['-y', 'skills', 'add', SKILL_SOURCE, '--skill', SKILL_NAME];
         if (!IS_TTY) {
@@ -895,6 +915,51 @@ async function installForClient(clientKey, creds, prompt) {
       report.push('Откройте проект в IDE → Settings → Tools → AI Assistant → MCP.');
       if (!existsSync(path.join(projectDir, '.gitignore'))) {
         warn(`Добавьте ${path.join(projectDir, '.mcp.json')} в .gitignore — там токен.`);
+      }
+      break;
+    }
+
+    case 'grok': {
+      const grokCmd = resolveCommand('grok');
+      let done = false;
+      if (grokCmd) {
+        const run = spawnSync(
+          grokCmd,
+          [
+            'mcp',
+            'add',
+            '--transport',
+            'stdio',
+            '--scope',
+            'user',
+            SERVER_NAME,
+            '-e',
+            `TRACKER_TOKEN=${creds.token}`,
+            '-e',
+            `TRACKER_ORG_ID=${creds.orgId}`,
+            ...(creds.auth === 'iam' ? ['-e', 'TRACKER_AUTH=iam'] : []),
+            '--',
+            process.execPath,
+            INDEX_JS,
+          ],
+          { shell: false, encoding: 'utf8' },
+        );
+        done = run.status === 0;
+        if (!done) {
+          warn(`CLI вернул ошибку: ${(run.stderr || run.stdout || '').trim()}`);
+        }
+      }
+      if (done) {
+        configuredFile = path.join(HOME, '.grok', 'config.toml');
+        report.push('Добавлен командой `grok mcp add` (scope: user).');
+        report.push(`Конфиг: ${configuredFile}`);
+        report.push('Проверка: `grok mcp list` и `grok mcp doctor yandex-tracker`.');
+        report.push('Сервер подхватит новая сессия Grok. Внутри сессии — /mcps.');
+      } else {
+        report.push('Выполните вручную в терминале:');
+        report.push(`  grok mcp add --transport stdio --scope user ${SERVER_NAME} \\`);
+        report.push(`    -e TRACKER_TOKEN=<ваш-токен> -e TRACKER_ORG_ID=${creds.orgId} \\`);
+        report.push(`    -- ${process.execPath} ${INDEX_JS}`);
       }
       break;
     }

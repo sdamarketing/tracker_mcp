@@ -10,7 +10,7 @@
 TASK-123 с резолюцией “Решён”» — а он делает это через API Трекера сам, без копирования ссылок руками.
 
 Работает с любым MCP-клиентом: **VS Code (Copilot), Cursor, Claude Desktop,
-Claude Code, opencode, Windsurf, Zed, JetBrains AI Assistant**.
+Claude Code, opencode, Windsurf, Zed, JetBrains AI Assistant, Grok CLI**.
 
 > 📘 Подробное руководство для новичков (получение токена, пошаговая настройка
 > каждого клиента, решение проблем) — в **[docs/SETUP.md](docs/SETUP.md)**.
@@ -97,7 +97,8 @@ curl -fsSL https://raw.githubusercontent.com/sdamarketing/tracker_mcp/main/insta
 (спросит согласия, sudo не нужен) → скачает сервер в `~/.traker-mcp` → соберёт
 и проверит его → запустит **мастер настройки**: ключи Трекера (ввод скрыт),
 проверка ключей в API, выбор AI-клиента (VS Code, Cursor, Claude Desktop,
-Claude Code, opencode, Windsurf, Zed, JetBrains) и итоговый отчёт.
+Claude Code, opencode, Windsurf, Zed, JetBrains, Grok CLI). Если команда `grok`
+уже есть, мастер прописывает сервер в `~/.grok/config.toml` сразу, до меню.
 
 **Повторный запуск той же командой = обновление сервера** (конфиги клиентов не трогаются).
 
@@ -185,6 +186,7 @@ npm run setup
 | **Windsurf** | `npm run setup` | `~/.codeium/windsurf/mcp_config.json` |
 | **Zed** | `npm run setup` | `settings.json` (`context_servers`) |
 | **JetBrains IDE** | `npm run setup` | `.mcp.json` в корне проекта |
+| **Grok CLI** | `npm run setup` (сам, если есть `grok`) | `~/.grok/config.toml` |
 
 Пошаговые инструкции с точными путями для macOS/Windows/Linux:
 **[docs/SETUP.md](docs/SETUP.md#6-подключение-к-вашему-агенту)**.

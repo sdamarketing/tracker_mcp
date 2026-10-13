@@ -10,6 +10,7 @@
 - **MCP (Model Context Protocol)** — протокол, по которому AI-клиенты вызывают инструменты.
 - **tracker-mcp** — наш пакет/сервер (npm: `tracker-mcp`, GitHub: `sdamarketing/tracker_mcp`).
 - **MCP-клиент / harness** — агент-хост: opencode, Claude Code, Cursor, Claude Desktop,
+  Grok CLI,
   VS Code, Windsurf, Zed, JetBrains.
 
 ## Сущности Трекера (термины API)
