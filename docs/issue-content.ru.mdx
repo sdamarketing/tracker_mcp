@@ -17,6 +17,16 @@ description: "Работа с содержимым задачи: коммент�
 | `delete_comment` | Удаление (`confirm: true`) | [Удалить](https://yandex.ru/support/tracker/ru/api/issues/delete-comment) |
 | `add_comment_reaction` | Реакция: `LIKE`, `DISLIKE`, `LAUGH`, `HOORAY`, `CONFUSED`, `HEART`, `ROCKET`, `EYES`, `FIRE`, `OK`, `FACEPALM`, `CHECK` | [Добавить реакцию](https://yandex.ru/support/tracker/ru/api/issues/add-reaction-to-comment) |
 
+`add_comment` принимает только `issueId` и `text`; текст уходит как Yandex
+Flavored Markdown. Ни поле `markupType`, ни query-параметр `isAddToFollowers`
+инструмент не передаёт — сервер отправляет только `{"text": "..."}`.
+
+<Warning>У `isAddToFollowers` нет аналога среди инструментов, поэтому к автору
+комментария применяется поведение API по умолчанию. Чтобы добавить комментарий
+и не оставить автора в списке наблюдателей, уберите его после через `edit_issue`
+и `extraFields: {"followers": {"remove": ["<login>"]}}` — либо передайте весь
+массив `followers` (логины или id пользователей).</Warning>
+
 ## Чеклисты
 
 | Инструмент | API |

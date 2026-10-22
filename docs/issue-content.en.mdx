@@ -12,6 +12,17 @@ description: "Working inside an issue: comments with 12 reactions, checklists, t
 | `get_issue_comment` / `edit_comment` / `delete_comment` | [Single comment ops](https://yandex.ru/support/tracker/ru/api/issues/get-comment) |
 | `add_comment_reaction` | [Reaction](https://yandex.ru/support/tracker/ru/api/issues/add-reaction-to-comment) — `LIKE`, `HEART`, `ROCKET`, `FIRE`, `OK`… 12 types |
 
+`add_comment` takes only `issueId` and `text`; the text is sent as Yandex
+Flavored Markdown. Neither the API's `markupType` field nor its
+`isAddToFollowers` query parameter is exposed — the server posts
+`{"text": "..."}` only.
+
+<Warning>`isAddToFollowers` has no tool equivalent, so the API default applies
+to the comment author. To add a comment without leaving the author in the
+followers list, remove them afterwards with `edit_issue` and
+`extraFields: {"followers": {"remove": ["<login>"]}}` — or pass the full
+`followers` array (logins or user ids).</Warning>
+
 ## Checklists
 
 `get_checklist`, `add_checklist_item`, `edit_checklist_item`,
