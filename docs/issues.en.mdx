@@ -44,8 +44,41 @@ Required create-fields per queue: `get_queue_fields`. Full field lists:
 [Issue fields](https://yandex.ru/support/tracker/ru/api/issues/fields),
 [Request body](https://yandex.ru/support/tracker/ru/api/issues/request-fields).
 
+The `project` field reads differently in and out. On the way **in**
+(`create_issue` / `edit_issue`) it takes a project shortId. In the `get_issue`
+response it is a `{primary, secondary}` reference: `primary` is the issue's
+own project (a single id), `secondary` is the list of additional associated
+projects.
+
+```
+get_issue { issueId: "TREK-123" }
+→ "project": { "primary": "my-project-id", "secondary": [] }
+```
+
+The same `{primary, secondary}` shape is used for other object references,
+e.g. an entity's `parentEntity` in the projects API.
+
+<Warning>Queue-local fields are addressed by **compound id**
+
 <Warning>Queue-local fields are addressed by **compound id**
 (`61a1b2c3…--fieldKey`), short keys are rejected with 400.</Warning>
+
+Custom fields go **at the top level** of `create_issue` / `edit_issue`, not
+inside an `extraFields` wrapper: `extraFields` is an MCP argument that the
+server merges into the request body as-is, so `{"extraFields": {...}}` in raw
+JSON is wrong — the API expects the field names directly.
+
+```
+// edit_issue arguments — both forms reach the API as top-level fields
+edit_issue {
+  issueId: "TREK-123",
+  priority: "blocker",
+  extraFields: {
+    "61a1b2c3…--customerSegment": "enterprise",   // custom / queue-local field
+    tags: { add: ["urgent"] }                      // array update command
+  }
+}
+```
 
 ## Transitions
 
