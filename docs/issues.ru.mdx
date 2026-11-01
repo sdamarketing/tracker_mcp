@@ -58,9 +58,40 @@ Queue: YTMCP Status: open "Sort by": Created ASC
 [«Тело запроса»](https://yandex.ru/support/tracker/ru/api/issues/request-fields),
 [«Формат ответа»](https://yandex.ru/support/tracker/ru/api/issues/response-fields).
 
+Поле `project` читается по-разному на входе и на выходе. При передаче
+(`create_issue` / `edit_issue`) это короткий id проекта. В ответе `get_issue`
+— ссылка `{primary, secondary}`: `primary` — собственный проект задачи
+(один id), `secondary` — список дополнительно связанных проектов.
+
+```
+get_issue { issueId: "TREK-123" }
+→ "project": { "primary": "my-project-id", "secondary": [] }
+```
+
+Такая же форма `{primary, secondary}` используется и для других ссылок на
+объекты, например `parentEntity` у сущностей в API проектов.
+
 <Warning>Локальные поля очереди в задаче адресуются **составным id**
 (`61a1b2c3…--customerSegment`), короткий ключ API отвергнет с 400. Проверено
 живым прогоном.</Warning>
+
+Пользовательские поля передаются **на верхнем уровне** `create_issue` /
+`edit_issue`, а не внутри обёртки `extraFields`: `extraFields` — это
+аргумент MCP, который сервер подмешивает в тело запроса как есть, поэтому
+`{"extraFields": {...}}` в «сыром» JSON — ошибка, API ждёт имена полей
+непосредственно.
+
+```
+// аргументы edit_issue — обе формы уходят в API как поля верхнего уровня
+edit_issue {
+  issueId: "TREK-123",
+  priority: "blocker",
+  extraFields: {
+    "61a1b2c3…--customerSegment": "enterprise",   // пользовательское / локальное поле
+    tags: { add: ["urgent"] }                      // команда для массива
+  }
+}
+```
 
 ## Переходы по воркфлоу
 

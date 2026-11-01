@@ -51,6 +51,23 @@ description: "Управление под самим Трекером орган
 | `get_users` | [Список с фильтрами email/group + пагинация](https://yandex.ru/support/tracker/ru/api/users/get-users) |
 | `get_users_relative` | [Относительная пагинация >10 000](https://yandex.ru/support/tracker/ru/api/users/get-users-relative) |
 
+`get_user` ищет пользователя по логину **или** uid — оба варианта передаются
+в единственный аргумент `login`: либо логин (`"user1"`), либо числовой uid
+строкой (`"112000000001"`). Сервер не проверяет, что именно вы передали, а
+просто вызывает `GET /v3/users/{login}`.
+
+Инструмент возвращает ответ API как есть, поэтому тело — стандартный объект
+пользователя: `login`, `uid`, `displayName`, `email`, `firstName`,
+`lastName`, `dismissed`, `hasLicense`, `disableNotifications`, `external` и
+`groups` приходят от эндпоинта, если заданы. Сервер ничего не добавляет, не
+удаляет и не переименовывает — точный список полей и типы смотрите в
+[справочнике get-user](https://yandex.ru/support/tracker/ru/api/users/get-user).
+
+```
+get_user    { login: "user1" }        // по логину
+get_user    { login: "112000000001" } // по uid
+```
+
 ## Отпуска и отсутствия
 
 | Инструмент | API |

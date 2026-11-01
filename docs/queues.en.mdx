@@ -27,6 +27,33 @@ Inside issues they are addressed by compound id `…--fieldKey`.
 | `get_components`, `get_component`, `create_component`, `update_component`, `delete_component`, `get_component_*_access` | [Components](https://yandex.ru/support/tracker/ru/api/queues/get-components) |
 | `create_queue_version` (POST `/v3/versions`), `get_queue_versions`, `get_queue_version`, `update_queue_version`, `delete_queue_version` | [Versions](https://yandex.ru/support/tracker/ru/api/queues/get-versions) — version due field is **`dueDate`**, not `releaseDate` |
 
+Versions are separate from the queue path: only the create call carries
+`queue` in the body (`POST /v3/versions`), while get/update/delete address
+`/v3/versions/{versionId}` by numeric id.
+
+```
+create_queue_version  { queueId: "TREK", name: "1.0", startDate: "2026-01-10", dueDate: "2026-02-01" }
+get_queue_versions    { queueId: "TREK" }            → [ { id, name, startDate, dueDate, ... } ]
+get_queue_version     { versionId: 42 }              // optional: fields: "name,dueDate"
+update_queue_version  { versionId: 42, dueDate: "2026-02-15" }
+delete_queue_version  { versionId: 42, confirm: true }
+```
+
+`versionId` is the numeric id from `get_queue_versions`, not the version name.
+`create_queue_version` and `update_queue_version` take the optional
+`name`, `description`, `startDate`, `dueDate` (dates as `YYYY-MM-DD`).
+
+Set versions on issues through the `fixVersions` field of `create_issue` or
+`edit_issue` — an array of version names or ids:
+
+```
+edit_issue { issueId: "TREK-123", fixVersions: ["1.0"] }
+```
+
+`edit_issue` changes versions with the same array commands used for other
+array fields, e.g. `extraFields: { fixVersions: { add: ["1.0"] } }` or
+`{ remove: ["0.9"] }`. `affectedVersions` works the same way.
+
 ## Access rights
 
 | Tool | API |

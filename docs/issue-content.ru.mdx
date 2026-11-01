@@ -36,6 +36,35 @@ Flavored Markdown. Ни поле `markupType`, ни query-параметр `isAd
 | `edit_checklist_item` | [Редактировать чеклист](https://yandex.ru/support/tracker/ru/api/issues/edit-checklist) |
 | `delete_checklist_item` / `delete_checklist` | [Удалить пункт](https://yandex.ru/support/tracker/ru/api/issues/delete-checklist-item) / [весь чеклист](https://yandex.ru/support/tracker/ru/api/issues/delete-checklist) |
 
+`add_checklist_item` принимает `issueId` и `text` (обязательные), плюс
+опциональные `checked`, `assignee` (логин или id пользователя) и
+`deadlineDate` (`YYYY-MM-DDThh:mm:ss.sss±hhmm`). Сервер отправляет
+`POST /v3/issues/{issue}/checklistItems` и раскладывает аргументы в тело
+пункта так — обратите внимание, что `deadlineDate` превращается в объект
+`deadline` с `deadlineType: "date"`:
+
+```
+add_checklist_item {
+  issueId: "TREK-123",
+  text: "Prepare release notes",
+  checked: false,
+  assignee: "user1",
+  deadlineDate: "2026-11-10T00:00:00.000+0300"
+}
+
+→ POST /v3/issues/TREK-123/checklistItems
+{
+  "text": "Prepare release notes",
+  "checked": false,
+  "assignee": "user1",
+  "deadline": { "date": "2026-11-10T00:00:00.000+0300", "deadlineType": "date" }
+}
+```
+
+В ответе каждый пункт приходит с `id`, `text`, `checked`, `assignee`,
+`deadline` и `checklistItemType`; этот `id` нужен для `edit_checklist_item`
+и `delete_checklist_item`.
+
 <Warning>API требует при PATCH **весь список пунктов целиком** — сервер перед
 `edit_checklist_item` сам читает чеклист и подставляет остальные пункты,
 агенту достаточно передать `id` и изменения.</Warning>
