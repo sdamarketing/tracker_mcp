@@ -32,6 +32,23 @@ the API.</Warning>
 `get_users_relative` (>10 000 paging) —
 [Users](https://yandex.ru/support/tracker/ru/api/users/get-users).
 
+`get_user` looks a user up by login **or** uid through the single `login`
+argument — pass either the login (`"user1"`) or the numeric uid as a string
+(`"112000000001"`); the server does not validate which one you passed, it
+calls `GET /v3/users/{login}` verbatim.
+
+The tool returns the API response as-is, so the body is the standard user
+object — `login`, `uid`, `displayName`, `email`, `firstName`, `lastName`,
+`dismissed`, `hasLicense`, `disableNotifications`, `external` and `groups`
+are returned by the endpoint when present. The server adds, removes or renames
+none of these fields; take the exact field list and types from the
+[get-user reference](https://yandex.ru/support/tracker/ru/api/users/get-user).
+
+```
+get_user    { login: "user1" }        // by login
+get_user    { login: "112000000001" } // by uid
+```
+
 ## Absences
 
 `create_gaps`, `find_gaps`, `delete_gaps` — workflow keys `vacation`,

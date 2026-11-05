@@ -29,6 +29,35 @@ followers list, remove them afterwards with `edit_issue` and
 `delete_checklist_item`, `delete_checklist` — see
 [Checklist](https://yandex.ru/support/tracker/ru/api/issues/get-checklist).
 
+`add_checklist_item` takes `issueId` and `text` (required), plus optional
+`checked`, `assignee` (login or user id) and `deadlineDate`
+(`YYYY-MM-DDThh:mm:ss.sss±hhmm`). The server posts to
+`POST /v3/issues/{issue}/checklistItems` and maps the arguments to the item
+body below — note that `deadlineDate` becomes a `deadline` object with
+`deadlineType: "date"`:
+
+```
+add_checklist_item {
+  issueId: "TREK-123",
+  text: "Prepare release notes",
+  checked: false,
+  assignee: "user1",
+  deadlineDate: "2026-11-10T00:00:00.000+0300"
+}
+
+→ POST /v3/issues/TREK-123/checklistItems
+{
+  "text": "Prepare release notes",
+  "checked": false,
+  "assignee": "user1",
+  "deadline": { "date": "2026-11-10T00:00:00.000+0300", "deadlineType": "date" }
+}
+```
+
+Each item is returned with an `id`, `text`, `checked`, `assignee`,
+`deadline` and `checklistItemType`; pass that `id` to `edit_checklist_item`
+or `delete_checklist_item`.
+
 <Warning>The API PATCHes the **whole checklist** — the server reads and
 re-submits the full item list for you when you call `edit_checklist_item`.</Warning>
 

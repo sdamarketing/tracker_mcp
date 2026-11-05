@@ -46,6 +46,33 @@ description: "Управление очередями: создание, нас�
 поле дедлайна версии — **`dueDate`**, а не `releaseDate` (обе грабли
 пойманы живым прогоном).</Warning>
 
+Версии живут вне пути очереди: только у создания `queue` уходит в теле
+(`POST /v3/versions`), а get/update/delete адресуют
+`/v3/versions/{versionId}` по числовому id.
+
+```
+create_queue_version  { queueId: "TREK", name: "1.0", startDate: "2026-01-10", dueDate: "2026-02-01" }
+get_queue_versions    { queueId: "TREK" }            → [ { id, name, startDate, dueDate, ... } ]
+get_queue_version     { versionId: 42 }              // опционально: fields: "name,dueDate"
+update_queue_version  { versionId: 42, dueDate: "2026-02-15" }
+delete_queue_version  { versionId: 42, confirm: true }
+```
+
+`versionId` — числовой id из `get_queue_versions`, а не имя версии.
+`create_queue_version` и `update_queue_version` принимают опциональные
+`name`, `description`, `startDate`, `dueDate` (даты в `YYYY-MM-DD`).
+
+Привязка версий к задачам — через поле `fixVersions` у `create_issue` или
+`edit_issue`: массив имён или id версий.
+
+```
+edit_issue { issueId: "TREK-123", fixVersions: ["1.0"] }
+```
+
+Менять версии в `edit_issue` можно теми же командами, что и для других
+массивов: `extraFields: { fixVersions: { add: ["1.0"] } }` или
+`{ remove: ["0.9"] }`. `affectedVersions` работает так же.
+
 ## Права доступа
 
 | Инструмент | API |
