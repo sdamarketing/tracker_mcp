@@ -32,12 +32,30 @@ Queue: YTMCP Status: open "Sort by": Created ASC
 "Queue": YTMCP Summary: ~"баг" "Sort by": Created DESC
 ```
 
+### Пагинация
+
+`find_issues` отправляет `POST /issues/_search`: источник поиска идёт в
+**теле** запроса (`queue`, `keys`, `filter`, `filterId`, `query` или `query2`),
+а `perPage` (по умолчанию 50) и `page` (по умолчанию 1) — в **query string
+URL**. Аргумента `offset` нет: листаем по номеру страницы.
+
+```
+find_issues { query: "Queue: TREK Status: open", perPage: 100, page: 2 }
+→ POST /issues/_search?perPage=100&page=2
+  { "query": "Queue: TREK Status: open" }
+```
+
+`order` (например, `"+updatedAt"`, `"-created"`) уходит в теле и работает
+только вместе с `filter`. При поиске через `query` сортировка задаётся в самой
+строке: `"Sort by": Updated DESC`.
+
 ### Scroll-поиск (>10 000 результатов)
 
 Обычная пагинация в API не отдаёт больше 10 000 задач на выборку. Для больших
-выборок используется scroll: `find_issues` с `scrollType` +
-`scrollTTLMillis`/`perScroll`, ответ содержит `scrollToken`, следующая страница
-запрашивается с тем же токеном. По завершении —
+выборок используется scroll: `find_issues` с `scrollType` (`sorted` или
+`unsorted`) + `scrollTTLMillis`/`perScroll` (по умолчанию 100, максимум 1000),
+ответ содержит `scrollId` и `scrollToken`, следующая страница запрашивается с
+тем же токеном. По завершении —
 `release_search_scroll(scrollToken, scrollId)`. См.
 [прокрутку результатов](https://yandex.ru/support/tracker/ru/api/issues/search-issues#scroll).
 
@@ -57,6 +75,27 @@ Queue: YTMCP Status: open "Sort by": Created ASC
 [«Поля задачи»](https://yandex.ru/support/tracker/ru/api/issues/fields),
 [«Тело запроса»](https://yandex.ru/support/tracker/ru/api/issues/request-fields),
 [«Формат ответа»](https://yandex.ru/support/tracker/ru/api/issues/response-fields).
+
+`queue` — **ключ** очереди (для созданной вручную — строчные латинские буквы,
+например `"TREK"`), `summary` — обычная строка, `description` поддерживает
+разметку YFM, а `assignee` принимает логин или id пользователя, но не имя из
+списка. Сначала найдите логин через `get_users { email: "user1@example.com" }`
+(или `get_user { login }`), затем передайте его `login`:
+
+```
+create_issue {
+  queue: "TREK",
+  summary: "Страница входа отдаёт 500 при неверном пароле",
+  description: "Шаги:\n1. Открыть /login\n2. Ввести неверный пароль",
+  assignee: "user1"
+}
+```
+
+`queue` задачи — очередь, в которой она лежит; `project` — отдельный
+необязательный основной проект (короткий id). Поиск `Queue: TREK` находит
+задачи, которые **сейчас** в этой очереди — `move_issue` меняет очередь,
+поэтому показанная ранее в `TREK` задача может позже оказаться с другим ключом
+очереди.
 
 Поле `project` читается по-разному на входе и на выходе. При передаче
 (`create_issue` / `edit_issue`) это короткий id проекта. В ответе `get_issue`

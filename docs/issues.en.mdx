@@ -27,7 +27,28 @@ Assignee: me() Resolution: empty() "Sort by": Updated DESC
 Queue: YTMCP Status: open "Sort by": Created ASC
 ```
 
-For >10 000 results use scroll: `scrollType` + `perScroll`, then
+### Pagination
+
+`find_issues` sends `POST /issues/_search`: the search source goes in the
+**body** (`queue`, `keys`, `filter`, `filterId`, `query` or `query2`), and
+`perPage` (default 50) and `page` (default 1) go in the **URL query string**.
+There is no `offset` argument — page by page number.
+
+```
+find_issues { query: "Queue: TREK Status: open", perPage: 100, page: 2 }
+→ POST /issues/_search?perPage=100&page=2
+  { "query": "Queue: TREK Status: open" }
+```
+
+`order` (e.g. `"+updatedAt"`, `"-created"`) is sent in the body and only works
+together with `filter`. Put sorting into the query itself with
+`"Sort by": Updated DESC` when using `query`.
+
+### Scroll (>10 000 results)
+
+For >10 000 results use scroll: `scrollType` (`sorted` or `unsorted`) +
+`perScroll` (default 100, max 1000), then pass the returned `scrollId` (and
+`scrollToken` when present) in the next call, and finish with
 `release_search_scroll`.
 
 ## Lifecycle
@@ -43,6 +64,26 @@ For >10 000 results use scroll: `scrollType` + `perScroll`, then
 Required create-fields per queue: `get_queue_fields`. Full field lists:
 [Issue fields](https://yandex.ru/support/tracker/ru/api/issues/fields),
 [Request body](https://yandex.ru/support/tracker/ru/api/issues/request-fields).
+
+`queue` is the queue **key** (lowercase latin letters for a queue you create,
+e.g. `"TREK"`), `summary` is a plain string, `description` accepts YFM markup,
+and `assignee` takes a login or a user id — not a display name. Resolve the
+login first with `get_users { email: "user1@example.com" }` (or
+`get_user { login }`), then pass its `login`:
+
+```
+create_issue {
+  queue: "TREK",
+  summary: "Login page returns 500 on wrong password",
+  description: "Steps:\n1. Open /login\n2. Enter a wrong password",
+  assignee: "user1"
+}
+```
+
+The issue's `queue` is the queue it belongs to; `project` is a separate,
+optional primary project (a project shortId). A `Queue: TREK` search matches
+issues **currently in** that queue — `move_issue` changes the queue, so an
+issue you saw in `TREK` earlier may later show another queue key.
 
 The `project` field reads differently in and out. On the way **in**
 (`create_issue` / `edit_issue`) it takes a project shortId. In the `get_issue`
